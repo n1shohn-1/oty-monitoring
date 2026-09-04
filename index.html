@@ -148,6 +148,9 @@
 
         function setFilter(filterType) {
             currentFilter = filterType;
+            if (trainDataGlobal.length > 0) {
+                renderTrains(trainDataGlobal);
+            }
         }
 
         function filterOrSearchTrain() {
@@ -173,12 +176,29 @@
             addLog(`📡 Dispetcher ${trainId} poyezdi mashinisti (${driverName})ga buyruq yubordi.`);
         }
 
-        const ws = new WebSocket(`ws://${window.location.host}/ws`);
+        // --- WEBSOCKET ULANI
+        let ws;
+        function connectWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
 
-        ws.onmessage = (event) => {
-            const trains = JSON.parse(event.data);
-            trainDataGlobal = trains;
-            
+            ws.onmessage = (event) => {
+                const trains = JSON.parse(event.data);
+                trainDataGlobal = trains;
+                renderTrains(trains);
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectWebSocket, 3000); // Uzilsa 3 soniyada avto-qayta ulanish
+            };
+
+            ws.onerror = (err) => {
+                console.error("WebSocket xatosi:", err);
+                ws.close();
+            };
+        }
+
+        function renderTrains(trains) {
             document.getElementById('total-trains').innerText = trains.length;
             
             let emergencyNum = 0;
@@ -234,7 +254,7 @@
                     markers[train.id].bindPopup(popupContent);
                 }
 
-                // Avariya sodir bo'lganda jurnalg yozish
+                // Avariya sodir bo'lganda jurnalga yozish
                 if (isEmergency && !previousEmergencyState) {
                     map.flyTo([train.lat, train.lng], 11, { duration: 2 });
                     showToast(`🚨 FAVQULODDA VAZIYAT: ${train.name} (${train.id}) da avariya!`);
@@ -259,7 +279,9 @@
             } else {
                 emergencyElem.className = "text-base font-bold text-green-400";
             }
-        };
+        }
+
+        connectWebSocket();
 
         async function triggerEmergency(trainId) {
             await fetch(`/trigger-emergency/${trainId}`, { method: 'POST' });

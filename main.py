@@ -34,31 +34,38 @@ async def get():
 async def fetch_trains_from_db():
     if not db_pool:
         return []
-    async with db_pool.acquire() as conn:
-        rows = await conn.fetch("""
-            SELECT id, name, type, route, cargo_type, latitude as lat, longitude as lng,
-                   speed, is_moving, risk_level, status, driver, emergency
-            FROM trains
-        """)
-        return [dict(row) for row in rows]
+    try:
+        async with db_pool.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT id, name, type, route, cargo_type, latitude as lat, longitude as lng,
+                       speed, is_moving, risk_level, status, driver, emergency
+                FROM trains
+            """)
+            return [dict(row) for row in rows]
+    except Exception as e:
+        print(f"❌ Ma'lumotlarni olishda xatolik: {e}")
+        return []
 
 async def update_train_positions_in_db():
     if not db_pool:
         return
-    async with db_pool.acquire() as conn:
-        trains = await conn.fetch("SELECT id, latitude, longitude, is_moving, emergency, type FROM trains")
-        for train in trains:
-            if train["is_moving"] and not train["emergency"]:
-                new_lat = train["latitude"] + random.uniform(-0.002, 0.002)
-                new_lng = train["longitude"] + random.uniform(-0.002, 0.002)
-                new_speed = random.randint(140, 230) if train["type"] == "high_speed" else random.randint(50, 90)
-                
-                await conn.execute("""
-                    UPDATE trains 
-                    SET latitude = $1, longitude = $2, speed = $3,
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE id = $4
-                """, new_lat, new_lng, new_speed, train["id"])
+    try:
+        async with db_pool.acquire() as conn:
+            trains = await conn.fetch("SELECT id, latitude, longitude, is_moving, emergency, type FROM trains")
+            for train in trains:
+                if train["is_moving"] and not train["emergency"]:
+                    new_lat = train["latitude"] + random.uniform(-0.002, 0.002)
+                    new_lng = train["longitude"] + random.uniform(-0.002, 0.002)
+                    new_speed = random.randint(140, 230) if train["type"] == "high_speed" else random.randint(50, 90)
+                    
+                    await conn.execute("""
+                        UPDATE trains 
+                        SET latitude = $1, longitude = $2, speed = $3,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = $4
+                    """, new_lat, new_lng, new_speed, train["id"])
+    except Exception as e:
+        print(f"❌ Koordinatalarni yangilashda xatolik: {e}")
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -67,10 +74,13 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             await update_train_positions_in_db()
             trains_data = await fetch_trains_from_db()
-            await websocket.send_text(json.dumps(trains_data))
+            # default=str — datetime va barcha mos bo'lmagan tiplarni avto serialization qiladi
+            await websocket.send_text(json.dumps(trains_data, default=str))
             await asyncio.sleep(2)
     except WebSocketDisconnect:
         print("Mijoz ulanishni uzdi")
+    except Exception as e:
+        print(f"WebSocket xatoligi: {e}")
 
 @app.post("/trigger-emergency/{train_id}")
 async def trigger_emergency(train_id: str):
