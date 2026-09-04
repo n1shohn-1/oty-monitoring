@@ -87,10 +87,10 @@
         // 2. Leaflet Xaritasini yaratish
         const map = L.map('map').setView([41.2995, 69.2401], 6);
 
-        // Dark Mode xarita qatlami
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+       // API kalitisiz ishlaydigan standart ochiq xarita qatlami
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: 'OpenStreetMap & OTY'
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
         let trainMarkers = {};
