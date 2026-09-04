@@ -1,46 +1,99 @@
+import asyncio
+import json
+import random
+import asyncpg
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
-import json
-import asyncio
 
 app = FastAPI()
 
-# O'zbekiston temir yo'llari xaritasi uchun asosiy liniyalar va stansiyalar
-MAP_ROUTES = {
-    "tashkent_bukhara": [[41.2995, 69.2401], [40.4897, 68.7842], [40.1158, 67.8422], [39.6542, 66.9597], [40.0844, 65.3792], [39.7747, 64.4286]],
-    "vodiy_line": [[41.2995, 69.2401], [40.5433, 70.9381], [40.3864, 71.7864], [40.7821, 72.3442]],
-    "south_line": [[39.6542, 66.9597], [38.8605, 65.7890], [37.2242, 67.2783]],
-    "west_line": [[39.7747, 64.4286], [41.5503, 60.6317], [41.4689, 59.6134], [43.0417, 58.8500]]
-}
+# PostgreSQL Baza Ulanish Satri
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/railway_db"
 
-# GPS bilan jihozlangan poyezdlar ro'yxati (Simulyatsiya telemetriyasi)
-trains_gps_data = [
-    {"id": "TR-101", "name": "Afrosiyob #762", "route": "Toshkent - Buxoro", "lat": 40.1158, "lng": 67.8422, "speed": 180, "status": "moving", "is_emergency": False},
-    {"id": "TR-204", "name": "Yo'lovchi #010", "route": "Toshkent - Termiz", "lat": 38.8605, "lng": 65.7890, "speed": 75, "status": "moving", "is_emergency": False},
-    {"id": "TR-502", "name": "Yuk Poyezdi #401", "route": "Navoiy - Qo'ng'irot", "lat": 41.5503, "lng": 60.6317, "speed": 0, "status": "stopped", "is_emergency": False},
-    {"id": "TR-999", "name": "Yuk Poyezdi #909", "route": "Qarshi - Samarqand", "lat": 39.1000, "lng": 66.2000, "speed": 0, "status": "emergency", "is_emergency": True}
-]
+db_pool = None
+
+@app.on_event("startup")
+async def startup():
+    global db_pool
+    try:
+        db_pool = await asyncpg.create_pool(DATABASE_URL)
+        print("✅ PostgreSQL Ma'lumotlar Bazasiga muvaffaqiyatli ulandi!")
+    except Exception as e:
+        print(f"❌ Bazaga ulanishda xatolik: {e}")
+
+@app.on_event("shutdown")
+async def shutdown():
+    if db_pool:
+        await db_pool.close()
 
 @app.get("/")
 async def get():
     with open("index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
-@app.get("/api/routes")
-async def get_routes():
-    return MAP_ROUTES
+async def fetch_trains_from_db():
+    if not db_pool:
+        return []
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT id, name, type, route, cargo_type, latitude as lat, longitude as lng,
+                   speed, is_moving, risk_level, status, driver, emergency
+            FROM trains
+        """)
+        return [dict(row) for row in rows]
+
+async def update_train_positions_in_db():
+    if not db_pool:
+        return
+    async with db_pool.acquire() as conn:
+        trains = await conn.fetch("SELECT id, latitude, longitude, is_moving, emergency, type FROM trains")
+        for train in trains:
+            if train["is_moving"] and not train["emergency"]:
+                new_lat = train["latitude"] + random.uniform(-0.002, 0.002)
+                new_lng = train["longitude"] + random.uniform(-0.002, 0.002)
+                new_speed = random.randint(140, 230) if train["type"] == "high_speed" else random.randint(50, 90)
+                
+                await conn.execute("""
+                    UPDATE trains 
+                    SET latitude = $1, longitude = $2, speed = $3,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $4
+                """, new_lat, new_lng, new_speed, train["id"])
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
-            # GPS koordinatalarini real vaqtda harakatlantirish
-            for train in trains_gps_data:
-                if train["status"] == "moving":
-                    train["lat"] += 0.001
-                    train["lng"] += 0.001
-            await websocket.send_text(json.dumps(trains_gps_data))
+            await update_train_positions_in_db()
+            trains_data = await fetch_trains_from_db()
+            await websocket.send_text(json.dumps(trains_data))
             await asyncio.sleep(2)
     except WebSocketDisconnect:
-        pass
+        print("Mijoz ulanishni uzdi")
+
+@app.post("/trigger-emergency/{train_id}")
+async def trigger_emergency(train_id: str):
+    if not db_pool:
+        return {"status": "error", "message": "Baza ulanmagan"}
+    async with db_pool.acquire() as conn:
+        await conn.execute("""
+            UPDATE trains
+            SET emergency = true, is_moving = false, speed = 0, risk_level = 98,
+                status = '🚨 FAVQULODDA AVARIYA VA XAVF!'
+            WHERE id = $1
+        """, train_id)
+    return {"status": "success", "message": "Avariya holati bazaga saqlandi!"}
+
+@app.post("/reset-emergency/{train_id}")
+async def reset_emergency(train_id: str):
+    if not db_pool:
+        return {"status": "error", "message": "Baza ulanmagan"}
+    async with db_pool.acquire() as conn:
+        await conn.execute("""
+            UPDATE trains
+            SET emergency = false, is_moving = true, speed = 50, risk_level = 15,
+                status = 'Harakatlanmoqda 🟢'
+            WHERE id = $1
+        """, train_id)
+    return {"status": "success", "message": "Xavf bekor qilindi"}
