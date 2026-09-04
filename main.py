@@ -5,48 +5,20 @@ import asyncio
 
 app = FastAPI()
 
-# Rasmdagi sxemaga mos asosiy stansiyalar
-STATIONS = [
-    {"name": "Toshkent-Markaziy", "lat": 41.2995, "lng": 69.2401},
-    {"name": "Guliston", "lat": 40.4897, "lng": 68.7842},
-    {"name": "Jizzax", "lat": 40.1158, "lng": 67.8422},
-    {"name": "Samarqand", "lat": 39.6542, "lng": 66.9597},
-    {"name": "Navoiy", "lat": 40.0844, "lng": 65.3792},
-    {"name": "Buxoro-1", "lat": 39.7747, "lng": 64.4286},
-    {"name": "Qarshi", "lat": 38.8605, "lng": 65.7890},
-    {"name": "Termiz", "lat": 37.2242, "lng": 67.2783},
-    {"name": "Qo'qon", "lat": 40.5433, "lng": 70.9381},
-    {"name": "Andijon-1", "lat": 40.7821, "lng": 72.3442},
-    {"name": "Urganch", "lat": 41.5503, "lng": 60.6317},
-    {"name": "Nukus", "lat": 41.4689, "lng": 59.6134},
-    {"name": "Qo'ng'irot", "lat": 43.0417, "lng": 58.8500}
-]
-
-# Temir yo'l magistrallari
-RAILWAY_NETWORKS = {
-    "tashkent_bukhara": [
-        [41.2995, 69.2401], [40.4897, 68.7842], [40.1158, 67.8422], 
-        [39.6542, 66.9597], [40.0844, 65.3792], [39.7747, 64.4286]
-    ],
-    "vodiy_line": [
-        [41.2995, 69.2401], [40.5433, 70.9381], [40.3864, 71.7864], [40.7821, 72.3442]
-    ],
-    "south_line": [
-        [39.6542, 66.9597], [38.8605, 65.7890], [37.2242, 67.2783]
-    ],
-    "west_line": [
-        [39.7747, 64.4286], [41.5503, 60.6317], [41.4689, 59.6134], [43.0417, 58.8500]
-    ]
+# O'zbekiston temir yo'llari xaritasi uchun asosiy liniyalar va stansiyalar
+MAP_ROUTES = {
+    "tashkent_bukhara": [[41.2995, 69.2401], [40.4897, 68.7842], [40.1158, 67.8422], [39.6542, 66.9597], [40.0844, 65.3792], [39.7747, 64.4286]],
+    "vodiy_line": [[41.2995, 69.2401], [40.5433, 70.9381], [40.3864, 71.7864], [40.7821, 72.3442]],
+    "south_line": [[39.6542, 66.9597], [38.8605, 65.7890], [37.2242, 67.2783]],
+    "west_line": [[39.7747, 64.4286], [41.5503, 60.6317], [41.4689, 59.6134], [43.0417, 58.8500]]
 }
 
-# Turli poyezdlar (Afrosiyob, Yo'lovchi, Yuk)
-active_trains = [
-    {"id": "AF-762", "name": "Afrosiyob (762)", "type": "afrosiyob", "route": "Toshkent - Buxoro", "lat": 40.1158, "lng": 67.8422, "speed": 210, "is_emergency": False},
-    {"id": "AF-764", "name": "Afrosiyob (764)", "type": "afrosiyob", "route": "Buxoro - Toshkent", "lat": 39.7747, "lng": 64.4286, "speed": 195, "is_emergency": False},
-    {"id": "PASS-010", "name": "Sharq Express", "type": "passenger", "route": "Toshkent - Termiz", "lat": 38.8605, "lng": 65.7890, "speed": 85, "is_emergency": False},
-    {"id": "PASS-060", "name": "Vodiy Express", "type": "passenger", "route": "Andijon - Toshkent", "lat": 40.5433, "lng": 70.9381, "speed": 75, "is_emergency": False},
-    {"id": "CARGO-401", "name": "Yuk Poyezdi #401", "type": "cargo", "route": "Navoiy - Qo'ng'irot", "lat": 41.5503, "lng": 60.6317, "speed": 50, "is_emergency": False},
-    {"id": "CARGO-909", "name": "Yuk Poyezdi #909", "type": "cargo", "route": "Qarshi - Samarqand", "lat": 39.1000, "lng": 66.2000, "speed": 0, "is_emergency": True}
+# GPS bilan jihozlangan poyezdlar ro'yxati (Simulyatsiya telemetriyasi)
+trains_gps_data = [
+    {"id": "TR-101", "name": "Afrosiyob #762", "route": "Toshkent - Buxoro", "lat": 40.1158, "lng": 67.8422, "speed": 180, "status": "moving", "is_emergency": False},
+    {"id": "TR-204", "name": "Yo'lovchi #010", "route": "Toshkent - Termiz", "lat": 38.8605, "lng": 65.7890, "speed": 75, "status": "moving", "is_emergency": False},
+    {"id": "TR-502", "name": "Yuk Poyezdi #401", "route": "Navoiy - Qo'ng'irot", "lat": 41.5503, "lng": 60.6317, "speed": 0, "status": "stopped", "is_emergency": False},
+    {"id": "TR-999", "name": "Yuk Poyezdi #909", "route": "Qarshi - Samarqand", "lat": 39.1000, "lng": 66.2000, "speed": 0, "status": "emergency", "is_emergency": True}
 ]
 
 @app.get("/")
@@ -54,20 +26,21 @@ async def get():
     with open("index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
-@app.get("/api/map-data")
-async def get_map_data():
-    return {"stations": STATIONS, "routes": RAILWAY_NETWORKS}
+@app.get("/api/routes")
+async def get_routes():
+    return MAP_ROUTES
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
-            for train in active_trains:
-                if not train["is_emergency"]:
-                    train["lat"] += 0.0012
-                    train["lng"] += 0.0012
-            await websocket.send_text(json.dumps(active_trains))
+            # GPS koordinatalarini real vaqtda harakatlantirish
+            for train in trains_gps_data:
+                if train["status"] == "moving":
+                    train["lat"] += 0.001
+                    train["lng"] += 0.001
+            await websocket.send_text(json.dumps(trains_gps_data))
             await asyncio.sleep(2)
     except WebSocketDisconnect:
         pass
