@@ -1,153 +1,177 @@
 <!DOCTYPE html>
-<html lang="uz" class="dark">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O'TY & FVV - Real-Time Poyezdlar Monitoringi</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
+    
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* FVV Favqulodda holat miltillash effekti */
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #map { height: calc(100vh - 80px); width: 100%; border-radius: 12px; }
+        .emergency-pulse {
+            animation: pulse-red 1.2s infinite;
+        }
         @keyframes pulse-red {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
             70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        .emergency-marker {
-            background-color: #ef4444;
-            border-radius: 50%;
-            border: 2px solid #ffffff;
-            animation: pulse-red 1.2s infinite;
-        }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 flex flex-col h-screen font-sans">
+<body class="h-screen flex flex-col overflow-hidden">
 
-    <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center shadow-lg">
-        <div class="flex items-center gap-3">
-            <span class="text-2xl">🚂</span>
+    <!-- HEADER / MONITORING PANEL -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-3 flex justify-between items-center z-10 shadow-lg">
+        <div class="flex items-center gap-4">
+            <div class="bg-blue-600 p-2.5 rounded-lg text-white">
+                <i class="fa-solid fa-train-subway text-2xl"></i>
+            </div>
             <div>
-                <h1 class="text-xl font-bold text-white tracking-wide">O'zbekiston Temir Yo'llari & FVV Monitoring</h1>
-                <p class="text-xs text-gray-400">Real-vaqt rejimida poyezdlar harakati va tezkor ogohlantirish tizimi</p>
+                <h1 class="text-xl font-bold tracking-wide text-white">O'ZBEKISTON TEMIR YO'LLARI & FVV</h1>
+                <p class="text-xs text-slate-400">Markaziy Dispetcherlik va Favqulodda Vaziyatlar Monitoring Tizimi</p>
             </div>
         </div>
-        <div id="status-badge" class="px-3 py-1 text-xs rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-            Tizim faol
+
+        <div class="flex items-center gap-6">
+            <div class="text-right">
+                <div id="live-clock" class="text-lg font-mono font-bold text-emerald-400">00:00:00</div>
+                <div class="text-xs text-slate-400">Toshkent vaqti (UTC+5)</div>
+            </div>
+            <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+                <span class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
+                <span class="text-xs font-semibold text-emerald-400">JONLI MUKAMMAL ALOQA</span>
+            </div>
         </div>
     </header>
 
-    <!-- Main Dashboard -->
-    <div class="flex flex-1 overflow-hidden">
-        <!-- Map Container -->
-        <div class="flex-1 relative">
-            <div id="map" class="w-full h-full bg-gray-950"></div>
+    <!-- MAIN BODY: MAP & SIDEBAR -->
+    <div class="flex flex-1 overflow-hidden p-3 gap-3">
+        
+        <!-- XARITA PANEL -->
+        <div class="flex-1 relative rounded-xl overflow-hidden border border-slate-800 shadow-2xl">
+            <div id="map"></div>
         </div>
 
-        <!-- Sidebar (Emergency Alerts & Train List) -->
-        <div class="w-96 bg-gray-800 border-l border-gray-700 flex flex-col">
-            <!-- Emergency Alerts Panel -->
-            <div class="p-4 border-b border-gray-700 bg-red-950/30">
-                <h2 class="text-sm font-bold text-red-400 uppercase tracking-wider flex items-center gap-2 mb-2">
-                    <span>🚨</span> FVV Favqulodda Bildirishnomalar
+        <!-- YON PANEL: POYEZDLAR RO'YXATI VA STATUS -->
+        <div class="w-96 bg-slate-900 rounded-xl border border-slate-800 flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                <h2 class="font-bold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-blue-500"></i> Aktivi Poyezdlar
                 </h2>
-                <div id="emergency-list" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                    <p class="text-xs text-gray-400 italic" id="no-emergency">Hozirda favqulodda holatlar yo'q</p>
-                </div>
+                <span id="train-count" class="bg-blue-900/50 text-blue-400 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-700/50">0 ta</span>
             </div>
 
-            <!-- Active Trains List -->
-            <div class="p-4 flex-1 overflow-y-auto">
-                <h2 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3">Faol Poyezdlar Ro'yxati</h2>
-                <div id="train-list" class="space-y-3">
-                    <!-- Dynamic train items go here -->
-                </div>
+            <!-- POYEZDLAR CARD'LARI -->
+            <div id="trains-list" class="flex-1 overflow-y-auto p-3 space-y-3">
+                <!-- JS orqali to'ldiriladi -->
             </div>
         </div>
     </div>
 
-    <!-- Audio for Emergency Alerts -->
-    <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        // Xaritani sozlash (Dark Mode style tiles)
-        const map = L.map('map').setView([41.2995, 69.2401], 6); // O'zbekiston markazi
+        // 1. Soatni yangilab turish
+        setInterval(() => {
+            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('uz-UZ');
+        }, 1000);
+
+        // 2. Leaflet Xaritasini yaratish
+        const map = L.map('map').setView([41.2995, 69.2401], 6);
+
+        // Dark Mode xarita qatlami
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
-            attribution: '&copy; OpenStreetMap & CartoDB'
+            attribution: 'OpenStreetMap & OTY'
         }).addTo(map);
 
-        const markers = {};
-        const polylines = {};
-        let activeEmergencies = new Set();
+        let trainMarkers = {};
 
-        // WebSocket ulanishini o'rnatish
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws`;
-        const socket = new WebSocket(wsUrl);
+        // 3. WebSocket ulanishi
+        const ws = new WebSocket(`ws://${window.location.host}/ws`);
 
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            updateDashboard(data);
-        };
+        ws.onmessage = function(event) {
+            const trains = JSON.parse(event.data);
+            document.getElementById('train-count').innerText = `${trains.length} ta`;
 
-        function updateDashboard(trains) {
-            const trainListEl = document.getElementById('train-list');
-            const emergencyListEl = document.getElementById('emergency-list');
-            
-            let hasNewEmergency = false;
+            const listContainer = document.getElementById('trains-list');
+            listContainer.innerHTML = '';
 
             trains.forEach(train => {
-                const isEmergency = train.is_emergency || train.speed === 0;
-
-                // 1. Marker yaratish yoki yangilash
-                if (!markers[train.id]) {
-                    const iconClass = isEmergency ? 'emergency-marker' : 'bg-blue-500 border-2 border-white rounded-full';
-                    const markerIcon = L.divIcon({
-                        className: iconClass,
-                        iconSize: [20, 20]
-                    });
-
-                    markers[train.id] = L.marker([train.lat, train.lng], { icon: markerIcon })
-                        .bindPopup(`<b>${train.name}</b><br>Tezlik: ${train.speed} km/s<br>Yo'nalish: ${train.route}`)
-                        .addTo(map);
-
-                    // Yo'nalish chizig'i (Polyline)
-                    polylines[train.id] = L.polyline([[train.lat, train.lng]], { color: isEmergency ? '#ef4444' : '#3b82f6', weight: 3 }).addTo(map);
+                if (trainMarkers[train.id]) {
+                    trainMarkers[train.id].setLatLng([train.lat, train.lng]);
                 } else {
-                    markers[train.id].setLatLng([train.lat, train.lng]);
-                    polylines[train.id].addLatLng([train.lat, train.lng]);
-                }
-
-                // 2. Favqulodda holatni qayta ishlash
-                if (isEmergency && !activeEmergencies.has(train.id)) {
-                    activeEmergencies.add(train.id);
-                    hasNewEmergency = true;
+                    const markerIcon = L.divIcon({
+                        className: 'custom-icon',
+                        html: `<div class="${train.emergency ? 'bg-red-600 emergency-pulse' : 'bg-blue-600'} text-white p-2 rounded-full w-8 h-8 flex items-center justify-center border-2 border-white shadow-lg"><i class="fa-solid fa-train text-xs"></i></div>`,
+                        iconSize: [32, 32]
+                    });
                     
-                    // Ovozli signal chalish
-                    document.getElementById('alert-sound').play().catch(() => {});
+                    const marker = L.marker([train.lat, train.lng], {icon: markerIcon}).addTo(map);
+                    trainMarkers[train.id] = marker;
                 }
-            });
 
-            // FVV xabarnomalar paneli yangilanishi
-            if (activeEmergencies.size > 0) {
-                document.getElementById('no-emergency')?.remove();
-                emergencyListEl.innerHTML = Array.from(activeEmergencies).map(id => `
-                    <div class="p-2 bg-red-900/50 border border-red-500/50 rounded text-xs text-red-200">
-                        <strong>⚠️ Xavf Sezildi!</strong> Poyezd ID: ${id} to'xtab qoldi yoki favqulodda signal berdi.
+                trainMarkers[train.id].bindPopup(`
+                    <div style="color: #000;">
+                        <h3 style="font-weight:bold;">${train.name} (${train.id})</h3>
+                        <p><b>Yo'nalish:</b> ${train.route}</p>
+                        <p><b>Tezlik:</b> ${train.speed} km/soat</p>
+                        <p><b>Mashinist:</b> ${train.driver}</p>
+                        <p><b>Status:</b> ${train.status}</p>
+                        <hr style="margin: 5px 0;">
+                        ${train.emergency 
+                            ? `<button onclick="resetEmergency('${train.id}')" style="background:green; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; width:100%;">🟢 Xavfni Bekor Qilish</button>`
+                            : `<button onclick="triggerEmergency('${train.id}')" style="background:red; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; width:100%;">🚨 Avariya Signalini Berish</button>`
+                        }
                     </div>
-                `).join('');
-            }
+                `);
+
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-lg border cursor-pointer transition-all ${train.emergency ? 'bg-red-950/40 border-red-600/80 animate-pulse' : 'bg-slate-800/60 border-slate-700/60 hover:border-blue-500'}`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="font-bold text-slate-100 flex items-center gap-2">
+                                ${train.name} 
+                                <span class="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-mono">${train.id}</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-0.5">${train.route}</div>
+                        </div>
+                        <span class="text-xs font-bold px-2 py-1 rounded ${train.emergency ? 'bg-red-600 text-white' : 'bg-emerald-950 text-emerald-400 border border-emerald-800'}">
+                            ${train.speed} km/h
+                        </span>
+                    </div>
+
+                    <div class="text-xs text-slate-400 flex justify-between items-center pt-2 border-t border-slate-700/50 mt-2">
+                        <span>👨‍✈️ ${train.driver}</span>
+                        <span class="${train.emergency ? 'text-red-400 font-bold' : 'text-slate-300'}">${train.status}</span>
+                    </div>
+                `;
+                
+                card.onclick = () => {
+                    map.flyTo([train.lat, train.lng], 9);
+                    trainMarkers[train.id].openPopup();
+                };
+
+                listContainer.appendChild(card);
+            });
+        };
+
+        async function triggerEmergency(id) {
+            await fetch(`/trigger-emergency/${id}`, {method: 'POST'});
+        }
+
+        async function resetEmergency(id) {
+            await fetch(`/reset-emergency/${id}`, {method: 'POST'});
         }
     </script>
 </body>
