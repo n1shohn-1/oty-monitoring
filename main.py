@@ -1,104 +1,73 @@
-import asyncio
-import random
-import json
-import requests
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
+import json
+import asyncio
 
-app = FastAPI(title="O'zbekiston Temir Yo'llari - FVV & TY Real-time Monitoring")
+app = FastAPI()
 
-USE_REAL_API = False  
-OTY_API_URL = "https://api.railway.uz/v1/trains/live-gps"
-OTY_API_TOKEN = "YOUR_OFFICIAL_API_TOKEN_HERE"            
-
-INITIAL_TRAINS = [
-    {"id": "TR-101", "name": "Afrosiyob 762", "type": "Yo'lovchi", "route": "Toshkent - Samarqand", "cargo_type": "Yo'lovchilar", "lat": 40.0, "lng": 66.9, "speed": 180, "risk_level": 10, "status": "Harakatlanmoqda 🟢", "driver": "A. Karimov", "emergency": False},
-    {"id": "TR-202", "name": "Nasaf 004", "type": "Yo'lovchi", "route": "Toshkent - Qarshi", "cargo_type": "Yo'lovchilar", "lat": 38.8, "lng": 65.7, "speed": 120, "risk_level": 15, "status": "Harakatlanmoqda 🟢", "driver": "B. Rahimov", "emergency": False},
-    {"id": "TR-505", "name": "Qamchiq Ekspress", "type": "Yuk", "route": "Angren - Pop", "cargo_type": "Neft va Kimyo", "lat": 41.1, "lng": 70.5, "speed": 60, "risk_level": 25, "status": "Dovonda harakatlanmoqda ⚠️", "driver": "S. Tursunov", "emergency": False},
-    {"id": "TR-909", "name": "Surxon Trans", "type": "Yuk", "route": "Termiz - Toshkent", "cargo_type": "Qishloq xo'jaligi", "lat": 37.2, "lng": 67.2, "speed": 0, "risk_level": 80, "status": "To'xtab turibdi 🟡", "driver": "O. Abdullayev", "emergency": False}
+# Rasmdagi sxemaga mos asosiy stansiyalar va magistrallar
+STATIONS = [
+    {"name": "Toshkent-Markaziy", "lat": 41.2995, "lng": 69.2401, "type": "hub"},
+    {"name": "Guliston", "lat": 40.4897, "lng": 68.7842, "type": "station"},
+    {"name": "Jizzax", "lat": 40.1158, "lng": 67.8422, "type": "station"},
+    {"name": "Samarqand", "lat": 39.6542, "lng": 66.9597, "type": "hub"},
+    {"name": "Navoiy", "lat": 40.0844, "lng": 65.3792, "type": "hub"},
+    {"name": "Buxoro-1", "lat": 39.7747, "lng": 64.4286, "type": "hub"},
+    {"name": "Qarshi", "lat": 38.8605, "lng": 65.7890, "type": "hub"},
+    {"name": "Termiz", "lat": 37.2242, "lng": 67.2783, "type": "station"},
+    {"name": "Qo'qon", "lat": 40.5433, "lng": 70.9381, "type": "station"},
+    {"name": "Andijon-1", "lat": 40.7821, "lng": 72.3442, "type": "station"},
+    {"name": "Urganch", "lat": 41.5503, "lng": 60.6317, "type": "station"},
+    {"name": "Nukus", "lat": 41.4689, "lng": 59.6134, "type": "station"},
+    {"name": "Qo'ng'irot", "lat": 43.0417, "lng": 58.8500, "type": "station"}
 ]
 
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: list[WebSocket] = []
+# Temir yo'l yo'nalishlari ko'ordinatalari
+RAILWAY_NETWORKS = {
+    "tashkent_bukhara": [
+        [41.2995, 69.2401], [40.4897, 68.7842], [40.1158, 67.8422], 
+        [39.6542, 66.9597], [40.0844, 65.3792], [39.7747, 64.4286]
+    ],
+    "vodiy_line": [
+        [41.2995, 69.2401], [40.5433, 70.9381], [40.3864, 71.7864], [40.7821, 72.3442]
+    ],
+    "south_line": [
+        [39.6542, 66.9597], [38.8605, 65.7890], [37.2242, 67.2783]
+    ],
+    "west_line": [
+        [39.7747, 64.4286], [41.5503, 60.6317], [41.4689, 59.6134], [43.0417, 58.8500]
+    ]
+}
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            try:
-                await connection.send_text(message)
-            except Exception:
-                pass
-
-manager = ConnectionManager()
-
-def fetch_from_oty_real_api():
-    try:
-        headers = {"Authorization": f"Bearer {OTY_API_TOKEN}"}
-        response = requests.get(OTY_API_URL, headers=headers, timeout=5)
-        if response.status_code == 200:
-            return response.json()
-    except Exception:
-        pass
-    return None
-
-async def train_monitoring_loop():
-    while True:
-        if USE_REAL_API:
-            real_data = fetch_from_oty_real_api()
-            if real_data:
-                await manager.broadcast(json.dumps(real_data))
-        else:
-            for train in INITIAL_TRAINS:
-                if not train["emergency"] and train["speed"] > 0:
-                    train["lat"] += random.uniform(-0.002, 0.002)
-                    train["lng"] += random.uniform(-0.002, 0.002)
-                    train["speed"] = max(30, min(220, train["speed"] + random.randint(-3, 3)))
-            
-            await manager.broadcast(json.dumps(INITIAL_TRAINS))
-        
-        await asyncio.sleep(2)
-
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(train_monitoring_loop())
+# Turlar bo'yicha poyezdlar (Afrosiyob, Yo'lovchi, Yuk)
+active_trains = [
+    {"id": "AF-762", "name": "Afrosiyob 762", "type": "afrosiyob", "route": "Toshkent - Buxoro", "lat": 40.1158, "lng": 67.8422, "speed": 210, "is_emergency": False},
+    {"id": "AF-764", "name": "Afrosiyob 764", "type": "afrosiyob", "route": "Buxoro - Toshkent", "lat": 39.7747, "lng": 64.4286, "speed": 195, "is_emergency": False},
+    {"id": "PASS-010", "name": "Sharq Express", "type": "passenger", "route": "Toshkent - Termiz", "lat": 38.8605, "lng": 65.7890, "speed": 85, "is_emergency": False},
+    {"id": "PASS-060", "name": "Vodiy Express", "type": "passenger", "route": "Andijon - Toshkent", "lat": 40.5433, "lng": 70.9381, "speed": 75, "is_emergency": False},
+    {"id": "CARGO-401", "name": "Yuk Poyezdi #401", "type": "cargo", "route": "Navoiy - Qo'ng'irot", "lat": 41.5503, "lng": 60.6317, "speed": 50, "is_emergency": False},
+    {"id": "CARGO-909", "name": "Yuk Poyezdi #909", "type": "cargo", "route": "Qarshi - Samarqand", "lat": 39.1000, "lng": 66.2000, "speed": 0, "is_emergency": True}
+]
 
 @app.get("/")
 async def get():
-    return FileResponse("index.html")
+    with open("index.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
 
-@app.post("/trigger-emergency/{train_id}")
-async def trigger_emergency(train_id: str):
-    for train in INITIAL_TRAINS:
-        if train["id"] == train_id:
-            train["emergency"] = True
-            train["status"] = "🚨 AVARIYA HOLATI!"
-            train["risk_level"] = 95
-            train["speed"] = 0
-    return {"status": "success", "message": f"{train_id} da avariya yoqildi"}
-
-@app.post("/reset-emergency/{train_id}")
-async def reset_emergency(train_id: str):
-    for train in INITIAL_TRAINS:
-        if train["id"] == train_id:
-            train["emergency"] = False
-            train["status"] = "Harakatlanmoqda 🟢"
-            train["risk_level"] = 10
-            train["speed"] = 80
-    return {"status": "success", "message": f"{train_id} da xavf bekor qilindi"}
+@app.get("/api/map-data")
+async def get_map_data():
+    return {"stations": STATIONS, "routes": RAILWAY_NETWORKS}
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
+    await websocket.accept()
     try:
         while True:
-            await websocket.receive_text()
+            for train in active_trains:
+                if not train["is_emergency"]:
+                    train["lat"] += 0.0015
+                    train["lng"] += 0.0015
+            await websocket.send_text(json.dumps(active_trains))
+            await asyncio.sleep(2)
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        pass
