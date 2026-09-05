@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <!-- Boshqaruv va Statistika Paneli (O'ng tomonda) -->
+        <!-- Boshqaruv va Statistika Paneli -->
         <div class="absolute top-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-md p-5 rounded-xl border border-slate-700 shadow-2xl w-84">
             <h1 class="text-lg font-bold text-blue-400 mb-1 flex items-center gap-2">
                 🏛️ FVV & TY MONITORING
@@ -76,21 +76,30 @@
                 </div>
             </div>
 
-            <!-- Simulyatsiya va Hisobot Tugmalari -->
+            <!-- ISTALGAN POYEZDDA AVARIYA SIMULYATSIYASI -->
             <div class="space-y-2 border-t border-slate-700 pt-3">
-                <button onclick="triggerEmergency('NFT-909')" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition">
-                    🚨 NFT-909 da Avariya E'lon Qilish
-                </button>
-                <button onclick="resetEmergency('NFT-909')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition">
-                    ✅ Xavfni Bekor Qilish
-                </button>
-                <button onclick="exportToCSV()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2">
+                <p class="text-xs text-gray-300 font-semibold mb-1">🚨 Favqulodda Holat Boshqaruvi:</p>
+                
+                <select id="train-select" class="w-full bg-slate-800 text-xs text-white border border-slate-600 rounded-lg p-2 focus:outline-none focus:border-red-500">
+                    <option value="">-- Poyezdni tanlang --</option>
+                </select>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="triggerSelectedEmergency()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-2 rounded-lg text-xs transition">
+                        🚨 Avariya E'lon Qilish
+                    </button>
+                    <button onclick="resetSelectedEmergency()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-2 rounded-lg text-xs transition">
+                        ✅ Xavfni Bekor Qilish
+                    </button>
+                </div>
+
+                <button onclick="exportToCSV()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2 mt-2">
                     📥 CSV Hisobotni Yuklab Olish
                 </button>
             </div>
         </div>
 
-        <!-- Hodisalar Jurnali (Pastki chap tomonda) -->
+        <!-- Hodisalar Jurnali -->
         <div class="absolute bottom-6 left-6 z-[1000] bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-700 shadow-2xl w-96 max-h-52 flex flex-col">
             <div class="flex items-center justify-between mb-2">
                 <h3 class="text-xs font-bold text-gray-200 flex items-center gap-1.5">
@@ -112,7 +121,6 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        // --- TEMIR YO'L LINIYALARI ---
         const railwayLines = [
             [[41.2995, 69.2401], [40.1250, 67.8800], [39.7747, 64.4286], [41.3800, 61.3600]],
             [[41.2995, 69.2401], [41.1100, 70.1500], [40.9200, 71.3200]],
@@ -123,18 +131,27 @@
             L.polyline(line, { color: '#3b82f6', weight: 4, opacity: 0.6, dashArray: '8, 8' }).addTo(map);
         });
 
-        // --- XAVFLI HUDUD ---
         const qamchiqZone = L.circle([41.1100, 70.1500], {
             color: 'red', fillColor: '#f03', fillOpacity: 0.25, radius: 35000
         }).addTo(map);
-        qamchiqZone.bindPopup("<b>⚠️ XAVFLI ZONA: Qamchiq Dovoni</b><br>Tog'li hudud, seysmik va ko'chki xavfi yuqori.");
+        qamchiqZone.bindPopup("<b>⚠️ XAVFLI ZONA: Qamchiq Dovoni</b>");
 
-        // --- GLOBAL O'ZGARUVCHILAR ---
         const markers = {};
         let trainDataGlobal = [];
         let currentFilter = 'all';
         let previousEmergencyState = false;
-        const audioAlert = new Audio('https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3');
+
+        // Alarm Ovoz Fayli
+        const audioAlert = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
+        audioAlert.loop = true;
+
+        // Brauzer Ovoz Blokirovkasini Yechish
+        document.addEventListener('click', () => {
+            audioAlert.play().then(() => {
+                audioAlert.pause();
+                audioAlert.currentTime = 0;
+            }).catch(() => {});
+        }, { once: true });
 
         function addLog(message, isDanger = false) {
             const logBox = document.getElementById('incident-log');
@@ -142,21 +159,17 @@
             const logEntry = document.createElement('div');
             logEntry.className = `p-1.5 rounded border ${isDanger ? 'bg-red-950/60 border-red-800 text-red-300' : 'bg-slate-800/80 border-slate-700 text-gray-300'}`;
             logEntry.innerHTML = `<span class="text-gray-400 font-mono text-[10px]">[${time}]</span> ${message}`;
-            
             logBox.prepend(logEntry);
         }
 
         function setFilter(filterType) {
             currentFilter = filterType;
-            if (trainDataGlobal.length > 0) {
-                renderTrains(trainDataGlobal);
-            }
+            if (trainDataGlobal.length > 0) renderTrains(trainDataGlobal);
         }
 
         function filterOrSearchTrain() {
             const query = document.getElementById('search-input').value.toLowerCase();
             if(!query) return;
-
             const foundTrain = trainDataGlobal.find(t => t.id.toLowerCase().includes(query) || t.name.toLowerCase().includes(query));
             if(foundTrain && markers[foundTrain.id]) {
                 map.flyTo([foundTrain.lat, foundTrain.lng], 10, { duration: 1.5 });
@@ -171,12 +184,31 @@
             setTimeout(() => { toast.classList.add('hidden'); }, 5000);
         }
 
-        function sendAlertToDriver(trainId, driverName) {
-            alert(`📡 OGOHLANTIRISH YUBORILDI!\nMashinist: ${driverName}\nPoyezd ID: ${trainId}\n\nHabar: "Tezlikni kamaytiring va xavfsizlik rejimiga o'ting!"`);
-            addLog(`📡 Dispetcher ${trainId} poyezdi mashinisti (${driverName})ga buyruq yubordi.`);
+        function updateTrainSelectOptions(trains) {
+            const select = document.getElementById('train-select');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">-- Poyezdni tanlang --</option>';
+            trains.forEach(train => {
+                const option = document.createElement('option');
+                option.value = train.id;
+                option.textContent = `${train.id} - ${train.name}`;
+                if (train.id === currentValue) option.selected = true;
+                select.appendChild(option);
+            });
         }
 
-        // --- WEBSOCKET ULANI
+        async function triggerSelectedEmergency() {
+            const trainId = document.getElementById('train-select').value;
+            if (!trainId) return alert("Iltimos, avval poyezdni tanlang!");
+            await fetch(`/trigger-emergency/${trainId}`, { method: 'POST' });
+        }
+
+        async function resetSelectedEmergency() {
+            const trainId = document.getElementById('train-select').value;
+            if (!trainId) return alert("Iltimos, avval poyezdni tanlang!");
+            await fetch(`/reset-emergency/${trainId}`, { method: 'POST' });
+        }
+
         let ws;
         function connectWebSocket() {
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -188,26 +220,24 @@
                 renderTrains(trains);
             };
 
-            ws.onclose = () => {
-                setTimeout(connectWebSocket, 3000); // Uzilsa 3 soniyada avto-qayta ulanish
-            };
-
-            ws.onerror = (err) => {
-                console.error("WebSocket xatosi:", err);
-                ws.close();
-            };
+            ws.onclose = () => setTimeout(connectWebSocket, 3000);
         }
 
         function renderTrains(trains) {
             document.getElementById('total-trains').innerText = trains.length;
+            updateTrainSelectOptions(trains);
             
             let emergencyNum = 0;
             let totalSpeed = 0;
+            let hasActiveEmergency = false;
 
             trains.forEach(train => {
                 totalSpeed += train.speed;
                 const isEmergency = train.emergency;
-                if (isEmergency) emergencyNum++;
+                if (isEmergency) {
+                    emergencyNum++;
+                    hasActiveEmergency = true;
+                }
 
                 let shouldShow = true;
                 if (currentFilter === 'passenger' && train.type !== 'passenger' && train.type !== 'high_speed') shouldShow = false;
@@ -241,73 +271,48 @@
                             <h3 style="font-weight: bold; margin-bottom: 5px;">${train.name}</h3>
                             <b>ID:</b> ${train.id}<br>
                             <b>Yo'nalish:</b> ${train.route}<br>
-                            <b>Yuk/Turi:</b> ${train.cargo_type}<br>
                             <b>Tezlik:</b> ${train.speed} km/h<br>
-                            <b>Xavf Indeksi:</b> <span style="color:${isEmergency ? 'red' : 'green'}; font-weight:bold;">${train.risk_level}%</span><br>
                             <b>Holat:</b> ${train.status}<br>
-                            <b>Mashinist:</b> ${train.driver}<br>
-                            <button onclick="sendAlertToDriver('${train.id}', '${train.driver}')" style="margin-top:8px; background:#2563eb; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; width:100%;">
-                                📻 Mashinistga Signal Yuborish
-                            </button>
+                            <b>Mashinist:</b> ${train.driver}
                         </div>
                     `;
                     markers[train.id].bindPopup(popupContent);
                 }
-
-                // Avariya sodir bo'lganda jurnalga yozish
-                if (isEmergency && !previousEmergencyState) {
-                    map.flyTo([train.lat, train.lng], 11, { duration: 2 });
-                    showToast(`🚨 FAVQULODDA VAZIYAT: ${train.name} (${train.id}) da avariya!`);
-                    addLog(`🚨 FAVQULODDA VAZIYAT: ${train.name} (${train.id}) yo'nalishida xavf aniqlandi!`, true);
-                    audioAlert.play().catch(() => {});
-                    previousEmergencyState = true;
-                }
             });
 
-            if (emergencyNum === 0 && previousEmergencyState) {
-                addLog(`✅ Barcha xavflar bartaraf etildi. Tizim barqaror.`);
+            // OVOZ VA XABAR BERISH
+            if (hasActiveEmergency && !previousEmergencyState) {
+                audioAlert.play().catch(() => {});
+                showToast(`🚨 FAVQULODDA VAZIYAT: Avariya aniqlandi!`);
+                addLog(`🚨 FAVQULODDA VAZIYAT: Poyezd harakatida xavf aniqlandi!`, true);
+                previousEmergencyState = true;
+            } else if (!hasActiveEmergency && previousEmergencyState) {
+                audioAlert.pause();
+                audioAlert.currentTime = 0;
+                addLog(`✅ Barcha xavflar bartaraf etildi.`);
                 previousEmergencyState = false;
             }
 
             const avgSpeed = trains.length > 0 ? Math.round(totalSpeed / trains.length) : 0;
             document.getElementById('avg-speed').innerText = avgSpeed + " km/h";
-
-            const emergencyElem = document.getElementById('emergency-count');
-            emergencyElem.innerText = emergencyNum;
-            if (emergencyNum > 0) {
-                emergencyElem.className = "text-base font-bold text-red-500 animate-pulse";
-            } else {
-                emergencyElem.className = "text-base font-bold text-green-400";
-            }
+            document.getElementById('emergency-count').innerText = emergencyNum;
         }
 
         connectWebSocket();
 
-        async function triggerEmergency(trainId) {
-            await fetch(`/trigger-emergency/${trainId}`, { method: 'POST' });
-        }
-
-        async function resetEmergency(trainId) {
-            await fetch(`/reset-emergency/${trainId}`, { method: 'POST' });
-        }
-
         function exportToCSV() {
             if(trainDataGlobal.length === 0) return alert("Ma'lumot topilmadi!");
-
-            let csvContent = "data:text/csv;charset=utf-8,ID,Nomi,Yonalish,Tezlik(km/h),Xavf Indeksi(%),Avariya Holati,Mashinist\n";
+            let csvContent = "data:text/csv;charset=utf-8,ID,Nomi,Yonalish,Tezlik(km/h),Avariya,Mashinist\n";
             trainDataGlobal.forEach(t => {
-                csvContent += `${t.id},${t.name},${t.route},${t.speed},${t.risk_level},${t.emergency ? 'HA' : 'YOQ'},${t.driver}\n`;
+                csvContent += `${t.id},${t.name},${t.route},${t.speed},${t.emergency ? 'HA' : 'YOQ'},${t.driver}\n`;
             });
-
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `TY_Monitoring_Hisobot_${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute("download", `TY_Monitoring_Hisobot.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
-            addLog(`📥 Dispetcher tomonidan monitoring hisoboti (CSV) yuklab olindi.`);
         }
     </script>
 </body>
