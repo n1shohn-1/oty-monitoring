@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # PostgreSQL Baza Ulanish Satri
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/railway_db"
+DATABASE_URL = "postgresql://postgres1:TWgnz5UoW6XQe54w7cRgU6LNepo2eZhs@dpg-dae6iron74is73cjgu3g-a:5432/railway_db_glvt"
 
 db_pool = None
 
