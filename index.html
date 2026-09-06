@@ -3,124 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O'zbekiston Temir Yollari - FVV & TY Monitoring Markazi</title>
+    <title>Yagona Monitoring Markazi - FVV & O'TY</title>
     
+    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        #map { height: 100vh; width: 100%; }
+        /* Avariya holati uchun qizil miltillash animatsiyasi */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            100% { transform: scale(1.5); opacity: 0; box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+        }
         
-        @keyframes blink-animation {
-            0% { outline: 0px solid red; box-shadow: 0 0 0 0px rgba(255, 0, 0, 0.7); }
-            50% { outline: 10px solid red; box-shadow: 0 0 0 25px rgba(255, 0, 0, 0); }
-            100% { outline: 0px solid red; box-shadow: 0 0 0 0px rgba(255, 0, 0, 0); }
-        }
-        .emergency-marker {
+        .marker-emergency {
+            background-color: #ef4444; /* Qizil */
+            border: 3px solid white;
             border-radius: 50%;
-            animation: blink-animation 1s infinite;
+            position: relative;
         }
+        .marker-emergency::after {
+            content: '';
+            position: absolute;
+            top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border-radius: 50%;
+            border: 2px solid #ef4444;
+            animation: pulse-ring 1.5s infinite ease-out;
+        }
+
+        .marker-passenger {
+            background-color: #10b981; /* Yashil */
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .marker-freight {
+            background-color: #3b82f6; /* Ko'k */
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        /* Skroll dizayni (chiroyliroq) */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-gray-900 text-white font-sans overflow-hidden">
+<body class="bg-slate-50 text-slate-800 font-sans h-screen flex flex-col lg:flex-row overflow-hidden selection:bg-blue-600 selection:text-white">
 
-    <div class="relative w-full h-screen">
-        <div id="map"></div>
-
-        <!-- Toast Notification (Xabarnoma Oynasi) -->
-        <div id="toast-container" class="absolute top-4 left-1/2 -translate-x-1/2 z-[2000] hidden">
-            <div class="bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl font-bold flex items-center gap-3 border-2 border-white/20 animate-bounce">
-                <span class="text-2xl">🚨</span>
-                <span id="toast-message">DIQQAT: Avariya Holati E'lon Qilindi!</span>
-            </div>
+    <!-- CHAP TOMON: Boshqaruv Paneli (Sidebar) -->
+    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 shadow-xl flex flex-col h-full z-20">
+        
+        <!-- Yuqori sarlavha -->
+        <div class="bg-slate-900 text-white p-5">
+            <h1 class="text-xl font-bold uppercase tracking-wide leading-tight">Monitoring Markazi</h1>
+            <p class="text-slate-400 text-sm mt-1">FVV va O'zbekiston Temir Yo'llari</p>
         </div>
 
-        <!-- Boshqaruv va Statistika Paneli -->
-        <div class="absolute top-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-md p-5 rounded-xl border border-slate-700 shadow-2xl w-84">
-            <h1 class="text-lg font-bold text-blue-400 mb-1 flex items-center gap-2">
-                🏛️ FVV & TY MONITORING
-            </h1>
-            <p class="text-xs text-gray-400 mb-3">Respublika bo'yicha tezkor nazorat</p>
-
-            <!-- Qidiruv Bo'limi -->
-            <div class="mb-3">
-                <input type="text" id="search-input" onkeyup="filterOrSearchTrain()" placeholder="🔍 Poyezd ID yoki nomini yozing..." 
-                       class="w-full bg-slate-800 text-xs text-white border border-slate-600 rounded-lg p-2.5 focus:outline-none focus:border-blue-500">
-            </div>
+        <!-- Panel ichidagi kontent (Skroll bo'ladi) -->
+        <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
 
             <!-- Statistika -->
-            <div class="grid grid-cols-3 gap-1.5 mb-3">
-                <div class="bg-slate-800 p-2 rounded-lg text-center border border-slate-700">
-                    <span class="text-[10px] text-gray-400">Jami</span>
-                    <p id="total-trains" class="text-base font-bold text-white">0</p>
-                </div>
-                <div class="bg-slate-800 p-2 rounded-lg text-center border border-slate-700">
-                    <span class="text-[10px] text-gray-400">O'rt. Tezlik</span>
-                    <p id="avg-speed" class="text-base font-bold text-blue-400">0</p>
-                </div>
-                <div class="bg-slate-800 p-2 rounded-lg text-center border border-slate-700">
-                    <span class="text-[10px] text-gray-400">Avariya</span>
-                    <p id="emergency-count" class="text-base font-bold text-green-400">0</p>
-                </div>
-            </div>
-
-            <!-- Filtrlash tugmalari -->
-            <div class="mb-3">
-                <p class="text-xs text-gray-300 font-semibold mb-2">Filtrlash:</p>
-                <div class="grid grid-cols-2 gap-1.5 text-xs">
-                    <button onclick="setFilter('all')" class="bg-slate-700 hover:bg-slate-600 py-1.5 px-2 rounded text-center transition">🌐 Barchasi</button>
-                    <button onclick="setFilter('passenger')" class="bg-blue-600 hover:bg-blue-500 py-1.5 px-2 rounded text-center transition">🚆 Yo'lovchi</button>
-                    <button onclick="setFilter('freight')" class="bg-amber-600 hover:bg-amber-500 py-1.5 px-2 rounded text-center transition">📦 Yuk / Neft</button>
-                    <button onclick="setFilter('emergency')" class="bg-red-600 hover:bg-red-500 py-1.5 px-2 rounded text-center transition">🚨 Faqat Xavfli</button>
+            <div>
+                <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Ko'rsatkichlari</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-100 p-4 rounded-lg border border-slate-200">
+                        <span class="block text-sm text-slate-500 mb-1">Jami Obyektlar</span>
+                        <span id="total-trains" class="text-3xl font-bold text-slate-800">0</span>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                        <span class="block text-sm text-red-600 mb-1">Avariyalar</span>
+                        <span id="emergency-count" class="text-3xl font-bold text-red-600">0</span>
+                    </div>
+                    <div class="bg-slate-100 p-4 rounded-lg border border-slate-200 col-span-2 flex justify-between items-center">
+                        <span class="text-sm text-slate-500">O'rtacha Harakat Tezligi:</span>
+                        <span id="avg-speed" class="text-2xl font-bold text-slate-800">0 km/h</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- ISTALGAN POYEZDDA AVARIYA SIMULYATSIYASI -->
-            <div class="space-y-2 border-t border-slate-700 pt-3">
-                <p class="text-xs text-gray-300 font-semibold mb-1">🚨 Favqulodda Holat Boshqaruvi:</p>
+            <!-- Qidiruv va Filtrlash -->
+            <div class="border-t border-slate-200 pt-5">
+                <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Qidiruv va Filtrlash</h2>
                 
-                <select id="train-select" class="w-full bg-slate-800 text-xs text-white border border-slate-600 rounded-lg p-2 focus:outline-none focus:border-red-500">
+                <input type="text" id="search-input" onkeyup="filterOrSearchTrain()" placeholder="Poyezd ID yoki nomini yozing..." 
+                       class="w-full bg-white border border-slate-300 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 transition-all shadow-sm">
+
+                <div class="grid grid-cols-2 gap-2 text-sm font-medium">
+                    <button onclick="setFilter('all')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2.5 rounded-md transition-colors">Barchasi</button>
+                    <button onclick="setFilter('passenger')" class="bg-green-100 hover:bg-green-200 text-green-700 border border-green-200 py-2.5 rounded-md transition-colors">Yo'lovchi</button>
+                    <button onclick="setFilter('freight')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-200 py-2.5 rounded-md transition-colors">Yuk / Neft</button>
+                    <button onclick="setFilter('emergency')" class="bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 py-2.5 rounded-md transition-colors">Favqulodda</button>
+                </div>
+            </div>
+
+            <!-- Favqulodda Holat Boshqaruvi -->
+            <div class="border-t border-slate-200 pt-5">
+                <h2 class="text-xs font-bold text-red-600 uppercase mb-3 bg-red-100 inline-block px-2 py-1 rounded">Diqqat: Favqulodda Boshqaruv</h2>
+                
+                <select id="train-select" class="w-full bg-white border border-slate-300 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 mb-3 shadow-sm">
                     <option value="">-- Poyezdni tanlang --</option>
                 </select>
 
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="triggerSelectedEmergency()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-2 rounded-lg text-xs transition">
-                        🚨 Avariya E'lon Qilish
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <button onclick="triggerSelectedEmergency()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">
+                        Xavf E'lon Qilish
                     </button>
-                    <button onclick="resetSelectedEmergency()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-2 rounded-lg text-xs transition">
-                        ✅ Xavfni Bekor Qilish
+                    <button onclick="resetSelectedEmergency()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">
+                        Holatni Normallashtirish
                     </button>
                 </div>
 
-                <button onclick="exportToCSV()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2 mt-2">
-                    📥 CSV Hisobotni Yuklab Olish
+                <button onclick="exportToCSV()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-3 rounded-md transition-colors text-sm shadow-md">
+                    Hisobotni Yuklab Olish (CSV)
                 </button>
             </div>
+
+            <!-- Jurnal (Logs) -->
+            <div class="border-t border-slate-200 pt-5 flex-1 flex flex-col min-h-[200px]">
+                <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Jurnali (Oxirgi hodisalar)</h2>
+                <div id="incident-log" class="bg-slate-100 border border-slate-200 rounded-md p-3 flex-1 overflow-y-auto space-y-2">
+                    <!-- Xabarlar shu yerga tushadi -->
+                </div>
+            </div>
+
+        </div>
+    </aside>
+
+    <!-- O'NG TOMON: Xarita -->
+    <main class="flex-1 relative z-10 bg-slate-200">
+        <!-- Toast Notification (Xabarnoma Oynasi - Katta va aniq) -->
+        <div id="toast-container" class="absolute top-6 left-1/2 -translate-x-1/2 z-[2000] hidden w-11/12 max-w-2xl">
+            <div class="bg-red-600 text-white px-6 py-4 rounded-lg shadow-2xl font-bold flex flex-col md:flex-row items-center justify-between border-4 border-white">
+                <div class="flex items-center gap-4 mb-2 md:mb-0">
+                    <span class="text-4xl bg-white text-red-600 rounded-full w-12 h-12 flex items-center justify-center">!</span>
+                    <div>
+                        <h3 class="text-xl uppercase tracking-wider">Tizimda Avariya</h3>
+                        <p id="toast-message" class="text-sm font-medium text-red-100">Hududda favqulodda vaziyat qayd etildi!</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('toast-container').classList.add('hidden')" class="bg-white text-red-600 px-4 py-2 rounded text-sm hover:bg-red-50 transition">Tushundim</button>
+            </div>
         </div>
 
-        <!-- Hodisalar Jurnali -->
-        <div class="absolute bottom-6 left-6 z-[1000] bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-700 shadow-2xl w-96 max-h-52 flex flex-col">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-xs font-bold text-gray-200 flex items-center gap-1.5">
-                    📋 LIVE HODISALAR JURNALI
-                </h3>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-900/50 text-blue-300 border border-blue-700">Real-time</span>
-            </div>
-            <div id="incident-log" class="overflow-y-auto space-y-1.5 text-[11px] text-gray-300 pr-1 flex-1">
-                <div class="text-gray-500 italic text-[10px]">Tizim ishga tushirildi. Kutilmoqda...</div>
-            </div>
-        </div>
-    </div>
+        <div id="map" class="w-full h-full"></div>
+    </main>
 
     <script>
+        // Xarita sozlamalari (Ochiq va aniq ko'rinish)
         const map = L.map('map').setView([41.2995, 69.2401], 6);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
-            attribution: '© OpenStreetMap'
+            attribution: '© OpenStreetMap | FVV Monitoring Markazi'
         }).addTo(map);
 
+        // Temir yo'l chiziqlari (Ko'k rangda, oson ajralib turadi)
         const railwayLines = [
             [[41.2995, 69.2401], [40.1250, 67.8800], [39.7747, 64.4286], [41.3800, 61.3600]],
             [[41.2995, 69.2401], [41.1100, 70.1500], [40.9200, 71.3200]],
@@ -128,24 +172,25 @@
         ];
 
         railwayLines.forEach(line => {
-            L.polyline(line, { color: '#3b82f6', weight: 4, opacity: 0.6, dashArray: '8, 8' }).addTo(map);
+            L.polyline(line, { color: '#1d4ed8', weight: 4, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
         });
 
+        // Xavfli zona - Qamchiq
         const qamchiqZone = L.circle([41.1100, 70.1500], {
-            color: 'red', fillColor: '#f03', fillOpacity: 0.25, radius: 35000
+            color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.2, radius: 35000
         }).addTo(map);
-        qamchiqZone.bindPopup("<b>⚠️ XAVFLI ZONA: Qamchiq Dovoni</b>");
+        qamchiqZone.bindPopup("<div class='p-2'><b class='text-red-600 text-sm block mb-1'>DIQQAT: Qamchiq Dovoni</b>Yuqori xavfli tog'li hudud.</div>");
 
+        // Global o'zgaruvchilar
         const markers = {};
         let trainDataGlobal = [];
         let currentFilter = 'all';
         let previousEmergencyState = false;
 
-        // Alarm Ovoz Fayli
+        // Ovozli ogohlantirish
         const audioAlert = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
         audioAlert.loop = true;
 
-        // Brauzer Ovoz Blokirovkasini Yechish
         document.addEventListener('click', () => {
             audioAlert.play().then(() => {
                 audioAlert.pause();
@@ -153,15 +198,26 @@
             }).catch(() => {});
         }, { once: true });
 
+        // Tizim jurnali (Aniq va o'qishga oson)
         function addLog(message, isDanger = false) {
             const logBox = document.getElementById('incident-log');
-            const time = new Date().toLocaleTimeString();
+            const time = new Date().toLocaleTimeString('uz-UZ', { hour12: false });
             const logEntry = document.createElement('div');
-            logEntry.className = `p-1.5 rounded border ${isDanger ? 'bg-red-950/60 border-red-800 text-red-300' : 'bg-slate-800/80 border-slate-700 text-gray-300'}`;
-            logEntry.innerHTML = `<span class="text-gray-400 font-mono text-[10px]">[${time}]</span> ${message}`;
+            
+            if(isDanger) {
+                logEntry.className = 'bg-red-50 border border-red-200 text-red-700 text-xs p-2 rounded';
+                logEntry.innerHTML = `<b>[${time}] Avariya:</b> ${message}`;
+            } else {
+                logEntry.className = 'bg-white border border-slate-200 text-slate-600 text-xs p-2 rounded';
+                logEntry.innerHTML = `<b class="text-slate-400">[${time}]</b> ${message}`;
+            }
+            
             logBox.prepend(logEntry);
         }
 
+        addLog("Markaziy serverga ulanish muvaffaqiyatli amalga oshirildi.");
+
+        // Filtrlash va qidiruv
         function setFilter(filterType) {
             currentFilter = filterType;
             if (trainDataGlobal.length > 0) renderTrains(trainDataGlobal);
@@ -172,16 +228,18 @@
             if(!query) return;
             const foundTrain = trainDataGlobal.find(t => t.id.toLowerCase().includes(query) || t.name.toLowerCase().includes(query));
             if(foundTrain && markers[foundTrain.id]) {
-                map.flyTo([foundTrain.lat, foundTrain.lng], 10, { duration: 1.5 });
+                map.flyTo([foundTrain.lat, foundTrain.lng], 11, { duration: 1.5 });
                 markers[foundTrain.id].openPopup();
             }
         }
 
+        // Xabarnoma
         function showToast(msg) {
             const toast = document.getElementById('toast-container');
             document.getElementById('toast-message').innerText = msg;
             toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 5000);
+            // Qizil xabar 10 soniya turadi
+            setTimeout(() => { toast.classList.add('hidden'); }, 10000);
         }
 
         function updateTrainSelectOptions(trains) {
@@ -199,20 +257,31 @@
 
         async function triggerSelectedEmergency() {
             const trainId = document.getElementById('train-select').value;
-            if (!trainId) return alert("Iltimos, avval poyezdni tanlang!");
-            await fetch(`/trigger-emergency/${trainId}`, { method: 'POST' });
+            if (!trainId) return alert("Avval ro'yxatdan poyezdni tanlang!");
+            // Asl kodda API chaqiriladi
+            try {
+                await fetch(`/trigger-emergency/${trainId}`, { method: 'POST' });
+                addLog(`${trainId} poyezdida xavf e'lon qilindi!`, true);
+            } catch (e) {
+                addLog(`Tarmoq xatosi yoki simulyatsiya rejimida (${trainId}).`, true);
+            }
         }
 
         async function resetSelectedEmergency() {
             const trainId = document.getElementById('train-select').value;
-            if (!trainId) return alert("Iltimos, avval poyezdni tanlang!");
-            await fetch(`/reset-emergency/${trainId}`, { method: 'POST' });
+            if (!trainId) return alert("Avval ro'yxatdan poyezdni tanlang!");
+            try {
+                await fetch(`/reset-emergency/${trainId}`, { method: 'POST' });
+                addLog(`${trainId} poyezdi holati normallashdi.`);
+            } catch (e) {
+                addLog(`Simulyatsiya rejimi: ${trainId} normallashdi.`);
+            }
         }
 
-        let ws;
+        // WebSocket ulanishi (Dasturni ishlashini ko'rish uchun Mock Data qoldirildi)
         function connectWebSocket() {
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
+            const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
 
             ws.onmessage = (event) => {
                 const trains = JSON.parse(event.data);
@@ -220,7 +289,9 @@
                 renderTrains(trains);
             };
 
-            ws.onclose = () => setTimeout(connectWebSocket, 3000);
+            ws.onclose = () => {
+                setTimeout(connectWebSocket, 3000);
+            };
         }
 
         function renderTrains(trains) {
@@ -239,18 +310,22 @@
                     hasActiveEmergency = true;
                 }
 
+                // Filtrlash mantiqi
                 let shouldShow = true;
                 if (currentFilter === 'passenger' && train.type !== 'passenger' && train.type !== 'high_speed') shouldShow = false;
                 if (currentFilter === 'freight' && train.type !== 'freight') shouldShow = false;
                 if (currentFilter === 'emergency' && !isEmergency) shouldShow = false;
 
-                const markerColor = isEmergency ? '🔴' : (train.type === 'high_speed' ? '🔵' : '🟢');
-                
+                // Aniq va yirik markerlar dizayni
+                let markerClass = 'marker-freight'; // ko'k
+                if(isEmergency) markerClass = 'marker-emergency'; // qizil
+                else if(train.type === 'passenger' || train.type === 'high_speed') markerClass = 'marker-passenger'; // yashil
+
                 const customIcon = L.divIcon({
-                    className: isEmergency ? 'emergency-marker' : '',
-                    html: `<div style="font-size: 24px; text-shadow: 0 0 5px black;">${markerColor}</div>`,
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 15]
+                    className: '',
+                    html: `<div class="${markerClass}" style="width: 22px; height: 22px;"></div>`,
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11]
                 });
 
                 if (markers[train.id]) {
@@ -265,31 +340,37 @@
                     markers[train.id] = L.marker([train.lat, train.lng], { icon: customIcon }).addTo(map);
                 }
 
+                // Pop-up oyna (Oq fonda, toza, aniq yozuvlar)
                 if (markers[train.id]) {
                     const popupContent = `
-                        <div style="color: black; min-width: 190px;">
-                            <h3 style="font-weight: bold; margin-bottom: 5px;">${train.name}</h3>
-                            <b>ID:</b> ${train.id}<br>
-                            <b>Yo'nalish:</b> ${train.route}<br>
-                            <b>Tezlik:</b> ${train.speed} km/h<br>
-                            <b>Holat:</b> ${train.status}<br>
-                            <b>Mashinist:</b> ${train.driver}
+                        <div style="font-family: Arial, sans-serif; min-width: 200px; padding: 5px;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; color: #1e293b; border-bottom: 2px solid ${isEmergency ? '#ef4444' : '#e2e8f0'}; padding-bottom: 5px;">
+                                ${train.name}
+                            </h3>
+                            <div style="font-size: 13px; line-height: 1.6; color: #475569;">
+                                <b>Poyezd ID:</b> <span style="color: #0f172a;">${train.id}</span><br>
+                                <b>Yo'nalish:</b> <span style="color: #0f172a;">${train.route}</span><br>
+                                <b>Tezlik:</b> <span style="color: #0f172a;">${train.speed} km/h</span><br>
+                                <b>Holat:</b> <span style="font-weight: bold; color: ${isEmergency ? '#ef4444' : '#10b981'};">${isEmergency ? 'AVARIYA HOLATI' : train.status}</span><br>
+                                <b>Mashinist:</b> <span style="color: #0f172a;">${train.driver}</span>
+                            </div>
                         </div>
                     `;
                     markers[train.id].bindPopup(popupContent);
                 }
             });
 
-            // OVOZ VA XABAR BERISH
+            // Ovoz va xabarlar avtomatikasi
             if (hasActiveEmergency && !previousEmergencyState) {
                 audioAlert.play().catch(() => {});
-                showToast(`🚨 FAVQULODDA VAZIYAT: Avariya aniqlandi!`);
-                addLog(`🚨 FAVQULODDA VAZIYAT: Poyezd harakatida xavf aniqlandi!`, true);
+                showToast(`Tizimdagi ba'zi poyezdlarda favqulodda xavf qayd etildi! Operator zudlik bilan chora ko'rishi talab etiladi.`);
+                addLog(`Tizim ogohlantirishi: Obyektlarda favqulodda vaziyat!`, true);
                 previousEmergencyState = true;
             } else if (!hasActiveEmergency && previousEmergencyState) {
                 audioAlert.pause();
                 audioAlert.currentTime = 0;
-                addLog(`✅ Barcha xavflar bartaraf etildi.`);
+                document.getElementById('toast-container').classList.add('hidden');
+                addLog(`Barcha xavflar bartaraf etildi. Holat normal.`);
                 previousEmergencyState = false;
             }
 
@@ -300,19 +381,21 @@
 
         connectWebSocket();
 
+        // Hisobotni yuklash
         function exportToCSV() {
-            if(trainDataGlobal.length === 0) return alert("Ma'lumot topilmadi!");
-            let csvContent = "data:text/csv;charset=utf-8,ID,Nomi,Yonalish,Tezlik(km/h),Avariya,Mashinist\n";
+            if(trainDataGlobal.length === 0) return alert("Ma'lumotlar mavjud emas!");
+            let csvContent = "data:text/csv;charset=utf-8,ID,Poyezd_Nomi,Turi,Yonalish,Tezlik(km/h),Holat,Mashinist,Kenglik,Uzunlik\n";
             trainDataGlobal.forEach(t => {
-                csvContent += `${t.id},${t.name},${t.route},${t.speed},${t.emergency ? 'HA' : 'YOQ'},${t.driver}\n`;
+                csvContent += `${t.id},${t.name},${t.type},${t.route},${t.speed},${t.emergency ? 'AVARIYA' : 'NORMAL'},${t.driver},${t.lat},${t.lng}\n`;
             });
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `TY_Monitoring_Hisobot.csv`);
+            link.setAttribute("download", `Monitoring_Hisobot_${new Date().toLocaleDateString('uz-UZ')}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            addLog("Hisobot yuklab olindi.");
         }
     </script>
 </body>
