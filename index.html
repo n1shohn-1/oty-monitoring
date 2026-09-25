@@ -83,7 +83,7 @@
         
         <!-- Yuqori sarlavha va FVV Logotipi -->
         <div class="bg-navy-900 border-b-2 border-fvv-yellow p-4 flex items-center gap-3">
-            <img src="fvv_logo.png" alt="FVV Logo" class="w-14 h-14 object-contain rounded-full p-1 bg-white shadow-[0_0_10px_#FFC107]" id="fvvLogo">
+            <img src="fvv_logo.png.jfif" alt="FVV Logo" class="w-14 h-14 object-contain rounded-full p-1 bg-white shadow-[0_0_10px_#FFC107]" id="fvvLogo">
             <div>
                 <h1 class="text-lg font-bold uppercase tracking-wide leading-tight text-white">Monitoring Markazi</h1>
                 <p class="text-fvv-yellow text-xs font-semibold mt-0.5">O'zbekiston Respublikasi FVV va O'TY</p>
@@ -188,7 +188,7 @@
         // Xarita sozlamalari (To'q ko'k CartoDB Dark Matter qatlami)
         const map = L.map('map').setView([41.2995, 69.2401], 6);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+       L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
             maxZoom: 18,
             attribution: '© OpenStreetMap | FVV Monitoring Markazi'
         }).addTo(map);
