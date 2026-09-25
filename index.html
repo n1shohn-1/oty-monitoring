@@ -11,6 +11,27 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#0A1128',
+                            800: '#101F42',
+                            700: '#1C2D5A',
+                            600: '#2A437E'
+                        },
+                        fvv: {
+                            yellow: '#FFC107',
+                            red: '#DC3545',
+                            green: '#28A745'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <style>
         /* Avariya holati uchun qizil miltillash animatsiyasi */
@@ -50,20 +71,23 @@
 
         /* Skroll dizayni (chiroyliroq) */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar-track { background: #0A1128; }
+        ::-webkit-scrollbar-thumb { background: #2A437E; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFC107; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans h-screen flex flex-col lg:flex-row overflow-hidden selection:bg-blue-600 selection:text-white">
+<body class="bg-navy-900 text-slate-100 font-sans h-screen flex flex-col lg:flex-row overflow-hidden selection:bg-blue-600 selection:text-white">
 
-    <!-- CHAP TOMON: Boshqaruv Paneli (Sidebar) -->
-    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 shadow-xl flex flex-col h-full z-20">
+    <!-- CHAP TOMON: Boshqaruv Paneli (Sidebar - To'q Ko'k Usulida) -->
+    <aside class="w-full lg:w-[420px] bg-navy-800 border-r border-navy-600 shadow-xl flex flex-col h-full z-20">
         
-        <!-- Yuqori sarlavha -->
-        <div class="bg-slate-900 text-white p-5">
-            <h1 class="text-xl font-bold uppercase tracking-wide leading-tight">Monitoring Markazi</h1>
-            <p class="text-slate-400 text-sm mt-1">FVV va O'zbekiston Temir Yo'llari</p>
+        <!-- Yuqori sarlavha va FVV Logotipi -->
+        <div class="bg-navy-900 border-b-2 border-fvv-yellow p-4 flex items-center gap-3">
+            <img src="fvv_logo.png" alt="FVV Logo" class="w-14 h-14 object-contain rounded-full p-1 bg-white shadow-[0_0_10px_#FFC107]" id="fvvLogo">
+            <div>
+                <h1 class="text-lg font-bold uppercase tracking-wide leading-tight text-white">Monitoring Markazi</h1>
+                <p class="text-fvv-yellow text-xs font-semibold mt-0.5">O'zbekiston Respublikasi FVV va O'TY</p>
+            </div>
         </div>
 
         <!-- Panel ichidagi kontent (Skroll bo'ladi) -->
@@ -73,62 +97,67 @@
             <div>
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Ko'rsatkichlari</h2>
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-100 p-4 rounded-lg border border-slate-200">
-                        <span class="block text-sm text-slate-500 mb-1">Jami Obyektlar</span>
-                        <span id="total-trains" class="text-3xl font-bold text-slate-800">0</span>
+                    <div class="bg-navy-700 p-4 rounded-lg border border-navy-600 border-l-4 border-l-fvv-yellow">
+                        <span class="block text-sm text-slate-300 mb-1">Jami Obyektlar</span>
+                        <span id="total-trains" class="text-3xl font-bold text-white">0</span>
                     </div>
-                    <div class="bg-red-50 p-4 rounded-lg border border-red-200">
-                        <span class="block text-sm text-red-600 mb-1">Avariyalar</span>
-                        <span id="emergency-count" class="text-3xl font-bold text-red-600">0</span>
+                    <div class="bg-navy-700 p-4 rounded-lg border border-navy-600 border-l-4 border-l-fvv-red">
+                        <span class="block text-sm text-fvv-red mb-1">Avariyalar</span>
+                        <span id="emergency-count" class="text-3xl font-bold text-fvv-red">0</span>
                     </div>
-                    <div class="bg-slate-100 p-4 rounded-lg border border-slate-200 col-span-2 flex justify-between items-center">
-                        <span class="text-sm text-slate-500">O'rtacha Harakat Tezligi:</span>
-                        <span id="avg-speed" class="text-2xl font-bold text-slate-800">0 km/h</span>
+                    <div class="bg-navy-700 p-4 rounded-lg border border-navy-600 col-span-2 flex justify-between items-center">
+                        <span class="text-sm text-slate-300">O'rtacha Harakat Tezligi:</span>
+                        <span id="avg-speed" class="text-2xl font-bold text-fvv-yellow">0 km/h</span>
                     </div>
                 </div>
             </div>
 
             <!-- Qidiruv va Filtrlash -->
-            <div class="border-t border-slate-200 pt-5">
+            <div class="border-t border-navy-600 pt-5">
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Qidiruv va Filtrlash</h2>
                 
                 <input type="text" id="search-input" onkeyup="filterOrSearchTrain()" placeholder="Poyezd ID yoki nomini yozing..." 
-                       class="w-full bg-white border border-slate-300 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 transition-all shadow-sm">
+                       class="w-full bg-navy-900 border border-navy-600 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-fvv-yellow mb-4 transition-all shadow-sm">
 
                 <div class="grid grid-cols-2 gap-2 text-sm font-medium">
-                    <button onclick="setFilter('all')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2.5 rounded-md transition-colors">Barchasi</button>
-                    <button onclick="setFilter('passenger')" class="bg-green-100 hover:bg-green-200 text-green-700 border border-green-200 py-2.5 rounded-md transition-colors">Yo'lovchi</button>
-                    <button onclick="setFilter('freight')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-200 py-2.5 rounded-md transition-colors">Yuk / Neft</button>
-                    <button onclick="setFilter('emergency')" class="bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 py-2.5 rounded-md transition-colors">Favqulodda</button>
+                    <button onclick="setFilter('all')" class="bg-navy-600 hover:bg-navy-700 text-white py-2.5 rounded-md transition-colors">Barchasi</button>
+                    <button onclick="setFilter('passenger')" class="bg-fvv-green/20 hover:bg-fvv-green/30 text-fvv-green border border-fvv-green/40 py-2.5 rounded-md transition-colors">Yo'lovchi</button>
+                    <button onclick="setFilter('freight')" class="bg-fvv-yellow/20 hover:bg-fvv-yellow/30 text-fvv-yellow border border-fvv-yellow/40 py-2.5 rounded-md transition-colors">Yuk / Neft</button>
+                    <button onclick="setFilter('emergency')" class="bg-fvv-red/20 hover:bg-fvv-red/30 text-fvv-red border border-fvv-red/40 py-2.5 rounded-md transition-colors">Favqulodda</button>
                 </div>
             </div>
 
             <!-- Favqulodda Holat Boshqaruvi -->
-            <div class="border-t border-slate-200 pt-5">
-                <h2 class="text-xs font-bold text-red-600 uppercase mb-3 bg-red-100 inline-block px-2 py-1 rounded">Diqqat: Favqulodda Boshqaruv</h2>
+            <div class="border-t border-navy-600 pt-5 bg-fvv-red/10 p-3 rounded-lg border border-fvv-red/30">
+                <h2 class="text-xs font-bold text-fvv-red uppercase mb-3 bg-fvv-red/20 inline-block px-2 py-1 rounded">Diqqat: Favqulodda Boshqaruv</h2>
                 
-                <select id="train-select" class="w-full bg-white border border-slate-300 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 mb-3 shadow-sm">
+                <select id="train-select" class="w-full bg-navy-900 border border-navy-600 text-white rounded-md px-4 py-3 text-sm focus:outline-none focus:border-fvv-red mb-3 shadow-sm">
                     <option value="">-- Poyezdni tanlang --</option>
                 </select>
 
-                <div class="grid grid-cols-2 gap-3 mb-4">
-                    <button onclick="triggerSelectedEmergency()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <button onclick="triggerSelectedEmergency()" class="bg-fvv-red hover:bg-red-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">
                         Xavf E'lon Qilish
                     </button>
-                    <button onclick="resetSelectedEmergency()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">
+                    <button onclick="resetSelectedEmergency()" class="bg-fvv-green hover:bg-green-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">
                         Holatni Normallashtirish
                     </button>
                 </div>
 
-                <button onclick="exportToCSV()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-3 rounded-md transition-colors text-sm shadow-md">
+                <!-- OMMAVIY SIGNALLASH TUGMASI -->
+                <button onclick="alertAllUnitsAndDispatch()" class="w-full bg-fvv-red hover:bg-red-700 text-white font-extrabold py-3 rounded-md shadow-[0_0_12px_rgba(220,53,69,0.6)] transition-all text-xs uppercase mb-3 border border-red-400">
+                    AVARIYA HAQIDA BARCHA QISMLARGA XABAR YUBORISH VA ENG YAQININI JALB ETISH
+                </button>
+
+                <button onclick="exportToCSV()" class="w-full bg-navy-600 hover:bg-navy-700 text-white font-medium py-3 rounded-md transition-colors text-sm shadow-md border border-navy-600">
                     Hisobotni Yuklab Olish (CSV)
                 </button>
             </div>
 
             <!-- Jurnal (Logs) -->
-            <div class="border-t border-slate-200 pt-5 flex-1 flex flex-col min-h-[200px]">
+            <div class="border-t border-navy-600 pt-5 flex-1 flex flex-col min-h-[200px]">
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Jurnali (Oxirgi hodisalar)</h2>
-                <div id="incident-log" class="bg-slate-100 border border-slate-200 rounded-md p-3 flex-1 overflow-y-auto space-y-2">
+                <div id="incident-log" class="bg-navy-900 border border-navy-600 rounded-md p-3 flex-1 overflow-y-auto space-y-2 font-mono text-xs">
                     <!-- Xabarlar shu yerga tushadi -->
                 </div>
             </div>
@@ -137,18 +166,18 @@
     </aside>
 
     <!-- O'NG TOMON: Xarita -->
-    <main class="flex-1 relative z-10 bg-slate-200">
+    <main class="flex-1 relative z-10 bg-navy-900">
         <!-- Toast Notification (Xabarnoma Oynasi - Katta va aniq) -->
         <div id="toast-container" class="absolute top-6 left-1/2 -translate-x-1/2 z-[2000] hidden w-11/12 max-w-2xl">
-            <div class="bg-red-600 text-white px-6 py-4 rounded-lg shadow-2xl font-bold flex flex-col md:flex-row items-center justify-between border-4 border-white">
+            <div class="bg-fvv-red text-white px-6 py-4 rounded-lg shadow-2xl font-bold flex flex-col md:flex-row items-center justify-between border-4 border-white">
                 <div class="flex items-center gap-4 mb-2 md:mb-0">
-                    <span class="text-4xl bg-white text-red-600 rounded-full w-12 h-12 flex items-center justify-center">!</span>
+                    <span class="text-4xl bg-white text-fvv-red rounded-full w-12 h-12 flex items-center justify-center">!</span>
                     <div>
                         <h3 class="text-xl uppercase tracking-wider">Tizimda Avariya</h3>
                         <p id="toast-message" class="text-sm font-medium text-red-100">Hududda favqulodda vaziyat qayd etildi!</p>
                     </div>
                 </div>
-                <button onclick="document.getElementById('toast-container').classList.add('hidden')" class="bg-white text-red-600 px-4 py-2 rounded text-sm hover:bg-red-50 transition">Tushundim</button>
+                <button onclick="document.getElementById('toast-container').classList.add('hidden')" class="bg-white text-fvv-red px-4 py-2 rounded text-sm hover:bg-red-50 transition">Tushundim</button>
             </div>
         </div>
 
@@ -156,15 +185,15 @@
     </main>
 
     <script>
-        // Xarita sozlamalari (Ochiq va aniq ko'rinish)
+        // Xarita sozlamalari (To'q ko'k CartoDB Dark Matter qatlami)
         const map = L.map('map').setView([41.2995, 69.2401], 6);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             maxZoom: 18,
             attribution: '© OpenStreetMap | FVV Monitoring Markazi'
         }).addTo(map);
 
-        // Temir yo'l chiziqlari (Ko'k rangda, oson ajralib turadi)
+        // Temir yo'l chiziqlari (Oltin-sariq rangda)
         const railwayLines = [
             [[41.2995, 69.2401], [40.1250, 67.8800], [39.7747, 64.4286], [41.3800, 61.3600]],
             [[41.2995, 69.2401], [41.1100, 70.1500], [40.9200, 71.3200]],
@@ -172,7 +201,25 @@
         ];
 
         railwayLines.forEach(line => {
-            L.polyline(line, { color: '#1d4ed8', weight: 4, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
+            L.polyline(line, { color: '#FFC107', weight: 4, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
+        });
+
+        // RESPUBLIKA QUTQARUV QISMLARI RO'YXATI
+        const rescueUnits = [
+            { id: 101, name: "Toshkent sh. Markaziy Yong'in-Qutqaruv Otryadi", lat: 41.3111, lng: 69.2797 },
+            { id: 102, name: "Sirdaryo v. FVB Qutqaruv Qismi (Guliston)", lat: 40.8373, lng: 68.6618 },
+            { id: 103, name: "Samarqand v. FVB Qutqaruv Qismi", lat: 39.6542, lng: 66.9597 },
+            { id: 104, name: "Qamchiq Dovoni Maxsus Qutqaruv Otryadi", lat: 41.1500, lng: 70.5000 },
+            { id: 105, name: "Buxoro v. FVB Harbiy-Qutqaruv Qismi", lat: 39.7747, lng: 64.4286 }
+        ];
+
+        rescueUnits.forEach(unit => {
+            L.circleMarker([unit.lat, unit.lng], {
+                radius: 7,
+                color: '#00F0FF',
+                fillColor: '#00F0FF',
+                fillOpacity: 0.8
+            }).addTo(map).bindPopup(`<b style="color:#000">${unit.name}</b><br><span style="color:#666">Holat: Shay rejimda (FVV)</span>`);
         });
 
         // Xavfli zona - Qamchiq
@@ -186,6 +233,7 @@
         let trainDataGlobal = [];
         let currentFilter = 'all';
         let previousEmergencyState = false;
+        let activeRouteLine = null;
 
         // Ovozli ogohlantirish
         const audioAlert = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
@@ -205,11 +253,11 @@
             const logEntry = document.createElement('div');
             
             if(isDanger) {
-                logEntry.className = 'bg-red-50 border border-red-200 text-red-700 text-xs p-2 rounded';
-                logEntry.innerHTML = `<b>[${time}] Avariya:</b> ${message}`;
+                logEntry.className = 'bg-fvv-red/20 border border-fvv-red/50 text-red-300 text-xs p-2 rounded';
+                logEntry.innerHTML = `<b class="text-fvv-red">[${time}] Avariya:</b> ${message}`;
             } else {
-                logEntry.className = 'bg-white border border-slate-200 text-slate-600 text-xs p-2 rounded';
-                logEntry.innerHTML = `<b class="text-slate-400">[${time}]</b> ${message}`;
+                logEntry.className = 'bg-navy-700/50 border border-navy-600 text-slate-300 text-xs p-2 rounded';
+                logEntry.innerHTML = `<b class="text-fvv-yellow">[${time}]</b> ${message}`;
             }
             
             logBox.prepend(logEntry);
@@ -276,6 +324,47 @@
             } catch (e) {
                 addLog(`Simulyatsiya rejimi: ${trainId} normallashdi.`);
             }
+            if(activeRouteLine) map.removeLayer(activeRouteLine);
+        }
+
+        // BARChA QISMLARGA XABAR BERISh VA ENG YAQIN QUTQARUV QISMINI JALB ETISh
+        function alertAllUnitsAndDispatch() {
+            const trainId = document.getElementById('train-select').value;
+            let targetTrain = trainDataGlobal.find(t => t.id === trainId);
+            
+            if (!targetTrain && trainDataGlobal.length > 0) {
+                targetTrain = trainDataGlobal[0];
+            }
+
+            if (!targetTrain) {
+                return alert("Tizimda poyezdlar ma'lumoti topilmadi!");
+            }
+
+            addLog(`🚨 RESPUBLIKA BO'YICHA BARCHA FVV QUTQARUV QISMLARIGA AVARIYA SIGNALI YUBORILDI!`, true);
+
+            let nearestUnit = null;
+            let minDistance = Infinity;
+
+            rescueUnits.forEach(unit => {
+                const dist = Math.sqrt(Math.pow(unit.lat - targetTrain.lat, 2) + Math.pow(unit.lng - targetTrain.lng, 2));
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    nearestUnit = unit;
+                }
+            });
+
+            if (activeRouteLine) map.removeLayer(activeRouteLine);
+
+            activeRouteLine = L.polyline([[targetTrain.lat, targetTrain.lng], [nearestUnit.lat, nearestUnit.lng]], {
+                color: '#FFC107',
+                weight: 4,
+                dashArray: '8, 8'
+            }).addTo(map);
+
+            map.flyTo([targetTrain.lat, targetTrain.lng], 9);
+
+            addLog(`🎯 ENG YAQIN QUTQARUV QISMI: ${nearestUnit.name}. Voqea joyiga safarbar etildi!`);
+            showToast(`Avariya joyiga eng yaqin bo'lgan "${nearestUnit.name}" jalb qilindi!`);
         }
 
         // WebSocket ulanishi (Dasturni ishlashini ko'rish uchun Mock Data qoldirildi)
