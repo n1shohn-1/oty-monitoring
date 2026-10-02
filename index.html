@@ -501,108 +501,102 @@
             document.body.removeChild(link);
             addLog("Hisobot yuklab olindi.");
         }
- <!-- JavaScript kodi FAQAT <script> va </script> TEGLARI ICHIDA BO'LISHI SHART -->
-<script>
-    // 1. Toshkent shahri va Toshkent viloyatining barcha tuman hamda shahar Yong'in-Qutqaruv Qismlari (YoQQ)
-    const rescueUnits = [
-        // --- TOSHKENT SHAHRI TUMANLARI ---
-        { name: "Yunusobod t. 4-YoQQ", lat: 41.3642, lng: 69.2897 },
-        { name: "Mirzo Ulug'bek t. 5-YoQQ", lat: 41.3385, lng: 69.3341 },
-        { name: "Yashnabod t. 8-YoQQ", lat: 41.2911, lng: 69.3289 },
-        { name: "Mirobod t. 2-YoQQ", lat: 41.2856, lng: 69.2783 },
-        { name: "Sergeli t. 10-YoQQ", lat: 41.2214, lng: 69.2203 },
-        { name: "Yangihayot t. 14-YoQQ", lat: 41.1853, lng: 69.2012 },
-        { name: "Yakkasaroy t. 1-YoQQ", lat: 41.2764, lng: 69.2511 },
-        { name: "Chilonzor t. 7-YoQQ", lat: 41.2721, lng: 69.1983 },
-        { name: "Uchtepa t. 11-YoQQ", lat: 41.2905, lng: 69.1672 },
-        { name: "Shayxontohur t. 3-YoQQ", lat: 41.3201, lng: 69.2312 },
-        { name: "Olmazor t. 6-YoQQ", lat: 41.3512, lng: 69.2154 },
-        { name: "Toshkent sh. Markaziy Qutqaruv Otryadi", lat: 41.2995, lng: 69.2401 },
+ // 1. Toshkent shahri va Toshkent viloyatining barcha tuman hamda shahar Yong'in-Qutqaruv Qismlari (YoQQ)
+        const rescueUnits = [
+            // --- TOSHKENT SHAHRI TUMANLARI ---
+            { name: "Yunusobod t. 4-YoQQ", lat: 41.3642, lng: 69.2897 },
+            { name: "Mirzo Ulug'bek t. 5-YoQQ", lat: 41.3385, lng: 69.3341 },
+            { name: "Yashnabod t. 8-YoQQ", lat: 41.2911, lng: 69.3289 },
+            { name: "Mirobod t. 2-YoQQ", lat: 41.2856, lng: 69.2783 },
+            { name: "Sergeli t. 10-YoQQ", lat: 41.2214, lng: 69.2203 },
+            { name: "Yangihayot t. 14-YoQQ", lat: 41.1853, lng: 69.2012 },
+            { name: "Yakkasaroy t. 1-YoQQ", lat: 41.2764, lng: 69.2511 },
+            { name: "Chilonzor t. 7-YoQQ", lat: 41.2721, lng: 69.1983 },
+            { name: "Uchtepa t. 11-YoQQ", lat: 41.2905, lng: 69.1672 },
+            { name: "Shayxontohur t. 3-YoQQ", lat: 41.3201, lng: 69.2312 },
+            { name: "Olmazor t. 6-YoQQ", lat: 41.3512, lng: 69.2154 },
+            { name: "Toshkent sh. Markaziy Qutqaruv Otryadi", lat: 41.2995, lng: 69.2401 },
 
-        // --- TOSHKENT VILOYATI SHAHARLARI VA TUMANLARI ---
-        { name: "Chirchiq sh. 3-YoQQ", lat: 41.4689, lng: 69.5822 },
-        { name: "Angren sh. 12-YoQQ", lat: 41.0167, lng: 70.1433 },
-        { name: "Olmaliq sh. 5-YoQQ", lat: 40.8458, lng: 69.5986 },
-        { name: "Yangiyo'l sh. 15-YoQQ", lat: 41.1167, lng: 69.0500 },
-        { name: "Bekobod sh. 9-YoQQ", lat: 40.2167, lng: 69.2167 },
-        { name: "Nurafshon sh. (Viloyat Boshqarmasi YoQQ)", lat: 41.0422, lng: 69.3611 },
-        { name: "Ohanqaron sh. 8-YoQQ", lat: 40.9064, lng: 69.6383 },
+            // --- TOSHKENT VILOYATI SHAHARLARI VA TUMANLARI ---
+            { name: "Chirchiq sh. 3-YoQQ", lat: 41.4689, lng: 69.5822 },
+            { name: "Angren sh. 12-YoQQ", lat: 41.0167, lng: 70.1433 },
+            { name: "Olmaliq sh. 5-YoQQ", lat: 40.8458, lng: 69.5986 },
+            { name: "Yangiyo'l sh. 15-YoQQ", lat: 41.1167, lng: 69.0500 },
+            { name: "Bekobod sh. 9-YoQQ", lat: 40.2167, lng: 69.2167 },
+            { name: "Nurafshon sh. (Viloyat Boshqarmasi YoQQ)", lat: 41.0422, lng: 69.3611 },
+            { name: "Ohanqaron sh. 8-YoQQ", lat: 40.9064, lng: 69.6383 },
 
-        // --- TOSHKENT VILOYATI TUMANLARI ---
-        { name: "Qibray t. 16-YoQQ", lat: 41.3897, lng: 69.4651 },
-        { name: "Toshkent t. 13-YoQQ", lat: 41.4123, lng: 69.2134 },
-        { name: "Zangiota t. 20-YoQQ", lat: 41.1964, lng: 69.1411 },
-        { name: "Yangiyo'l t. 21-YoQQ", lat: 41.0833, lng: 68.9667 },
-        { name: "Chinoz t. 19-YoQQ", lat: 40.9333, lng: 68.7667 },
-        { name: "Quyi Chirchiq t. (Dostobod) 25-YoQQ", lat: 40.8667, lng: 68.8333 },
-        { name: "O'rta Chirchiq t. 17-YoQQ", lat: 41.0333, lng: 69.2333 },
-        { name: "Pskent t. 22-YoQQ", lat: 40.8972, lng: 69.3514 },
-        { name: "Buka t. 23-YoQQ", lat: 40.8108, lng: 69.1986 },
-        { name: "Bekobod t. (Zafar) 24-YoQQ", lat: 40.2833, lng: 69.2333 },
-        { name: "Oqqo'rg'on t. 26-YoQQ", lat: 40.8600, lng: 69.0600 },
-        { name: "Parkent t. 18-YoQQ", lat: 41.2944, lng: 69.6764 },
-        { name: "Bostanliq t. (G'azalkent) 27-YoQQ", lat: 41.5583, lng: 69.7708 },
-        { name: "Chorvoq qutqaruv otryadi", lat: 41.6258, lng: 70.0244 }
-    ];
+            // --- TOSHKENT VILOYATI TUMANLARI ---
+            { name: "Qibray t. 16-YoQQ", lat: 41.3897, lng: 69.4651 },
+            { name: "Toshkent t. 13-YoQQ", lat: 41.4123, lng: 69.2134 },
+            { name: "Zangiota t. 20-YoQQ", lat: 41.1964, lng: 69.1411 },
+            { name: "Yangiyo'l t. 21-YoQQ", lat: 41.0833, lng: 68.9667 },
+            { name: "Chinoz t. 19-YoQQ", lat: 40.9333, lng: 68.7667 },
+            { name: "Quyi Chirchiq t. (Dostobod) 25-YoQQ", lat: 40.8667, lng: 68.8333 },
+            { name: "O'rta Chirchiq t. 17-YoQQ", lat: 41.0333, lng: 69.2333 },
+            { name: "Pskent t. 22-YoQQ", lat: 40.8972, lng: 69.3514 },
+            { name: "Buka t. 23-YoQQ", lat: 40.8108, lng: 69.1986 },
+            { name: "Bekobod t. (Zafar) 24-YoQQ", lat: 40.2833, lng: 69.2333 },
+            { name: "Oqqo'rg'on t. 26-YoQQ", lat: 40.8600, lng: 69.0600 },
+            { name: "Parkent t. 18-YoQQ", lat: 41.2944, lng: 69.6764 },
+            { name: "Bostanliq t. (G'azalkent) 27-YoQQ", lat: 41.5583, lng: 69.7708 },
+            { name: "Chorvoq qutqaruv otryadi", lat: 41.6258, lng: 70.0244 }
+        ];
 
-    // 2. Ikki nuqta orasidagi masofani hisoblash (KM)
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Yer radiusi (km)
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                  Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-    }
-
-    // 3. Avariya bo'lganda barcha qismlarga xabar berish va eng yaqinini aniqlash
-    function triggerEmergencyAlert(trainLat, trainLng) {
-        let nearestUnit = null;
-        let minDistance = Infinity;
-
-        // Eng yaqin qismni izlash
-        rescueUnits.forEach(unit => {
-            const dist = calculateDistance(trainLat, trainLng, unit.lat, unit.lng);
-            if (dist < minDistance) {
-                minDistance = dist;
-                nearestUnit = unit;
-            }
-        });
-
-        // Xaritada eng yaqin qutqaruv qismidan avariya joyiga chiziq tortish
-        if (window.routeLine) map.removeLayer(window.routeLine);
-        
-        window.routeLine = L.polyline([
-            [nearestUnit.lat, nearestUnit.lng],
-            [trainLat, trainLng]
-        ], {
-            color: '#FF0000',
-            weight: 4,
-            dashArray: '8, 8'
-        }).addTo(map);
-
-        // Tizim jurnaliga xabar yozish
-        const logBox = document.getElementById('log-container');
-        if(logBox) {
-            const time = new Date().toLocaleTimeString();
-            logBox.innerHTML = `<div class="text-red-400 font-bold">[${time}] 🚨 Barcha viloyat boshqarmalari va tuman qismlariga XABAR YUBORILDI!</div>` +
-                               `<div class="text-yellow-300 font-semibold">[${time}] 🚒 ENG YAQIN QISM: ${nearestUnit.name} (${minDistance.toFixed(1)} km). Safarbar etildi!</div>` + 
-                               logBox.innerHTML;
+        // 2. Ikki nuqta orasidagi masofani hisoblash (KM)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
         }
 
-        // Ekrandagi xabarnoma (Modal/Alert)
-        alert(`🚨 DIQQAT!\n\nBarcha FVV qismlariga xabar berildi.\n\nENG YAQIN QUTQARUV QISMI:\n${nearestUnit.name}\nMasofa: ${minDistance.toFixed(1)} km\n\nQutqaruv guruhi hodisa joyiga yo'naltirildi!`);
-    }
+        // 3. Avariya bo'lganda barcha qismlarga xabar berish va eng yaqinini aniqlash
+        function triggerEmergencyAlert(trainLat, trainLng) {
+            let nearestUnit = null;
+            let minDistance = Infinity;
 
-    // 4. Tugmaga biriktirilgan funksiya
-    function alertAllUnitsAndDispatch() {
-        const lat = window.selectedTrainLat || 40.9000;
-        const lng = window.selectedTrainLng || 69.6000;
-        
-        triggerEmergencyAlert(lat, lng);
-    }
+            rescueUnits.forEach(unit => {
+                const dist = calculateDistance(trainLat, trainLng, unit.lat, unit.lng);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    nearestUnit = unit;
+                }
+            });
+
+            if (window.routeLine) map.removeLayer(window.routeLine);
+            
+            window.routeLine = L.polyline([
+                [nearestUnit.lat, nearestUnit.lng],
+                [trainLat, trainLng]
+            ], {
+                color: '#FF0000',
+                weight: 4,
+                dashArray: '8, 8'
+            }).addTo(map);
+
+            const logBox = document.getElementById('log-container');
+            if(logBox) {
+                const time = new Date().toLocaleTimeString();
+                logBox.innerHTML = `<div class="text-red-400 font-bold">[${time}] 🚨 Barcha viloyat boshqarmalari va tuman qismlariga XABAR YUBORILDI!</div>` +
+                                   `<div class="text-yellow-300 font-semibold">[${time}] 🚒 ENG YAQIN QISM: ${nearestUnit.name} (${minDistance.toFixed(1)} km). Safarbar etildi!</div>` + 
+                                   logBox.innerHTML;
+            }
+
+            alert(`🚨 DIQQAT!\n\nBarcha FVV qismlariga xabar berildi.\n\nENG YAQIN QUTQARUV QISMI:\n${nearestUnit.name}\nMasofa: ${minDistance.toFixed(1)} km\n\nQutqaruv guruhi hodisa joyiga yo'naltirildi!`);
+        }
+
+        // 4. Tugmaga biriktirilgan funksiya
+        function alertAllUnitsAndDispatch() {
+            const lat = window.selectedTrainLat || 40.9000;
+            const lng = window.selectedTrainLng || 69.6000;
+            
+            triggerEmergencyAlert(lat, lng);
+        }
 </script>
 </body>
 </html>
