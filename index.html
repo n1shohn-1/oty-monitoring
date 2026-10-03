@@ -220,7 +220,7 @@
         });
 
         // RESPUBLIKA QUTQARUV QISMLARI RO'YXATI
-        const rescueUnits = [
+        let rescueUnits = [
             { id: 101, name: "Toshkent sh. Markaziy Yong'in-Qutqaruv Otryadi", lat: 41.3111, lng: 69.2797 },
             { id: 102, name: "Sirdaryo v. FVB Qutqaruv Qismi (Guliston)", lat: 40.8373, lng: 68.6618 },
             { id: 103, name: "Samarqand v. FVB Qutqaruv Qismi", lat: 39.6542, lng: 66.9597 },
@@ -501,8 +501,8 @@
             document.body.removeChild(link);
             addLog("Hisobot yuklab olindi.");
         }
- // 1. Toshkent shahri va Toshkent viloyatining barcha tuman hamda shahar Yong'in-Qutqaruv Qismlari (YoQQ)
-         rescueUnits = [
+ // 1. Qutqaruv qismlari ro'yxatini yuklash
+        rescueUnits = [
             // --- TOSHKENT SHAHRI TUMANLARI ---
             { name: "Yunusobod t. 4-YoQQ", lat: 41.3642, lng: 69.2897 },
             { name: "Mirzo Ulug'bek t. 5-YoQQ", lat: 41.3385, lng: 69.3341 },
@@ -543,7 +543,21 @@
             { name: "Chorvoq qutqaruv otryadi", lat: 41.6258, lng: 70.0244 }
         ];
 
-        // 2. Ikki nuqta orasidagi masofani hisoblash (KM)
+        // 2. Barcha qismlarni xaritaga qizil nuqta shaklida chiqarish
+        rescueUnits.forEach(unit => {
+            const rescueIcon = L.divIcon({
+                className: 'custom-rescue-icon',
+                html: `<div style="background-color: #ef4444; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 0 8px #ef4444;"></div>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+
+            L.marker([unit.lat, unit.lng], { icon: rescueIcon })
+                .bindPopup(`<b>🚒 ${unit.name}</b><br>FVV Yong'in-Qutqaruv Qismi`)
+                .addTo(map);
+        });
+
+        // 3. Masofani hisoblash funksiyasi
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -555,7 +569,7 @@
             return R * c;
         }
 
-        // 3. Avariya bo'lganda barcha qismlarga xabar berish va eng yaqinini aniqlash
+        // 4. Avariya haqida xabar berish
         function triggerEmergencyAlert(trainLat, trainLng) {
             let nearestUnit = null;
             let minDistance = Infinity;
@@ -590,11 +604,9 @@
             alert(`🚨 DIQQAT!\n\nBarcha FVV qismlariga xabar berildi.\n\nENG YAQIN QUTQARUV QISMI:\n${nearestUnit.name}\nMasofa: ${minDistance.toFixed(1)} km\n\nQutqaruv guruhi hodisa joyiga yo'naltirildi!`);
         }
 
-        // 4. Tugmaga biriktirilgan funksiya
         function alertAllUnitsAndDispatch() {
             const lat = window.selectedTrainLat || 40.9000;
             const lng = window.selectedTrainLng || 69.6000;
-            
             triggerEmergencyAlert(lat, lng);
         }
 </script>
