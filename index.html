@@ -609,6 +609,90 @@
             const lng = window.selectedTrainLng || 69.6000;
             triggerEmergencyAlert(lat, lng);
         }
+        // Xarita rejimini va koordinatalarini sozlash
+    var map = L.map('map').setView([41.2995, 69.2401], 7);
+
+    // ... QOLGAN KODLARINGIZ ...
+
+    // 1. O'ZBEKISTON CHEGARASINI AJRATIB KO'RSATISH
+    fetch('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/countries/uzbekistan.geojson')
+        .then(res => res.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: {
+                    color: '#3b82f6',
+                    weight: 3,
+                    opacity: 0.8,
+                    fillColor: '#1e3a8a',
+                    fillOpacity: 0.1
+                }
+            }).addTo(map);
+        }).catch(err => console.log("Chegara yuklanmadi:", err));
+
+    // 2. AVARIYA CHAQIRUVI VA ENG YAQIN QISMGA YO'NALTIRISH FUNKSIYASI
+    function triggerEmergencyAlert(trainLat, trainLng) {
+        let nearestUnit = null;
+        let minDistance = Infinity;
+
+        // Eng yaqin qutqaruv qismini topish
+        rescueUnits.forEach(unit => {
+            const dist = calculateDistance(trainLat, trainLng, unit.lat, unit.lng);
+            if (dist < minDistance) {
+                minDistance = dist;
+                nearestUnit = unit;
+            }
+        });
+
+        if (!nearestUnit) return;
+
+        // Eski chiziq bo'lsa o'chirish
+        if (window.routeLine) map.removeLayer(window.routeLine);
+
+        // Eng yaqin qismdan poyezdgacha QIZIL YO'L-YO'L CHIZIQ chizish
+        window.routeLine = L.polyline([
+            [nearestUnit.lat, nearestUnit.lng],
+            [trainLat, trainLng]
+        ], {
+            color: '#ff0000',
+            weight: 5,
+            opacity: 0.9,
+            dashArray: '10, 10',
+            lineCap: 'round'
+        }).addTo(map);
+
+        // Xaritanu avariya joyiga yaqinlashtirish (Zoom: 13)
+        map.flyTo([trainLat, trainLng], 13, {
+            animate: true,
+            duration: 1.5
+        });
+
+        // Avariyadagi poyezd ma'lumotlarini ekranga chiqarish (Popup)
+        const trainInfoPopup = L.popup()
+            .setLatLng([trainLat, trainLng])
+            .setContent(`
+                <div style="color: #000; padding: 5px;">
+                    <h3 style="color: #dc2626; font-weight: bold; margin-bottom: 5px;">🚨 FAVQULODDA HOLAT!</h3>
+                    <b>Poyezd:</b> ${window.selectedTrainName || 'PAS-501 Tashkent - Margilon'}<br>
+                    <b>Holati:</b> <span style="color: red; font-weight: bold;">Avariya qayd etildi</span><br>
+                    <b>Tezligi:</b> 0 km/h (To'xtagan)<br>
+                    <b>Biriktirilgan Qism:</b> ${nearestUnit.name}<br>
+                    <b>Qutqaruv masofasi:</b> ${minDistance.toFixed(1)} km
+                </div>
+            `)
+            .openOn(map);
+
+        // Log konteyneriga yozish
+        const logBox = document.getElementById('log-container');
+        if(logBox) {
+            const time = new Date().toLocaleTimeString();
+            logBox.innerHTML = `<div class="text-red-400 font-bold">[${time}] 🚨 Barcha viloyat boshqarmalari va tuman qismlariga XABAR YUBORILDI!</div>` +
+                               `<div class="text-yellow-300 font-semibold">[${time}] 🚒 ENG YAQIN QISM: ${nearestUnit.name} (${minDistance.toFixed(1)} km). Safarbar etildi!</div>` + 
+                               logBox.innerHTML;
+        }
+
+        // Ogohlantirish xabari
+        alert(`🚨 DIQQAT!\n\nBarcha FVV qismlariga xabar berildi.\n\nENG YAQIN QUTQARUV QISMI:\n${nearestUnit.name}\nMasofa: ${minDistance.toFixed(1)} km\n\nQutqaruv guruhi hodisa joyiga yo'naltirildi!`);
+    }
 </script>
 </body>
 </html>
