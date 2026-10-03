@@ -609,20 +609,21 @@
             const lng = window.selectedTrainLng || 69.6000;
             triggerEmergencyAlert(lat, lng);
         }
-      // 4. O'zbekiston chegarasini ajratib ko'rsatish
-        fetch('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/countries/uzbekistan.geojson')
-            .then(res => res.json())
-            .then(data => {
-                L.geoJSON(data, {
-                    style: {
-                        color: '#3b82f6',
-                        weight: 3,
-                        opacity: 0.8,
-                        fillColor: '#1e3a8a',
-                        fillOpacity: 0.1
-                    }
-                }).addTo(map);
-            }).catch(err => console.log("Chegara yuklanmadi:", err));
+      // O'ZBEKISTON CHEGARASINI AJRATIB KO'RSATISH
+    fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries/UZB.geo.json')
+        .then(res => res.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: {
+                    color: '#3b82f6',
+                    weight: 3,
+                    opacity: 0.8,
+                    fillColor: '#1e3a8a',
+                    fillOpacity: 0.15
+                }
+            }).addTo(map);
+        })
+        .catch(err => console.log("Chegara yuklanmadi:", err));
 
         // 5. Avariya chaqiruvi va eng yaqin qismga yo'naltirish funksiyasi (Faqat 1 marta e'lon qilindi)
         function triggerEmergencyAlert(trainLat, trainLng) {
