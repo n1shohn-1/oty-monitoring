@@ -609,12 +609,7 @@
             const lng = window.selectedTrainLng || 69.6000;
             triggerEmergencyAlert(lat, lng);
         }
-        // Xarita rejimini va koordinatalarini sozlash
-    var map = L.map('map').setView([41.2995, 69.2401], 7);
-
-    // ... QOLGAN KODLARINGIZ ...
-
-    // 1. O'ZBEKISTON CHEGARASINI AJRATIB KO'RSATISH
+       // 1. O'ZBEKISTON CHEGARASINI AJRATIB KO'RSATISH
     fetch('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/countries/uzbekistan.geojson')
         .then(res => res.json())
         .then(data => {
@@ -634,7 +629,6 @@
         let nearestUnit = null;
         let minDistance = Infinity;
 
-        // Eng yaqin qutqaruv qismini topish
         rescueUnits.forEach(unit => {
             const dist = calculateDistance(trainLat, trainLng, unit.lat, unit.lng);
             if (dist < minDistance) {
@@ -645,10 +639,9 @@
 
         if (!nearestUnit) return;
 
-        // Eski chiziq bo'lsa o'chirish
         if (window.routeLine) map.removeLayer(window.routeLine);
 
-        // Eng yaqin qismdan poyezdgacha QIZIL YO'L-YO'L CHIZIQ chizish
+        // Qizil yo'l-yo'l chiziq
         window.routeLine = L.polyline([
             [nearestUnit.lat, nearestUnit.lng],
             [trainLat, trainLng]
@@ -660,13 +653,13 @@
             lineCap: 'round'
         }).addTo(map);
 
-        // Xaritanu avariya joyiga yaqinlashtirish (Zoom: 13)
+        // Ekran yaqinlashishi
         map.flyTo([trainLat, trainLng], 13, {
             animate: true,
             duration: 1.5
         });
 
-        // Avariyadagi poyezd ma'lumotlarini ekranga chiqarish (Popup)
+        // Poyezd ma'lumotlar oynasi (Popup)
         const trainInfoPopup = L.popup()
             .setLatLng([trainLat, trainLng])
             .setContent(`
@@ -681,7 +674,6 @@
             `)
             .openOn(map);
 
-        // Log konteyneriga yozish
         const logBox = document.getElementById('log-container');
         if(logBox) {
             const time = new Date().toLocaleTimeString();
@@ -690,7 +682,6 @@
                                logBox.innerHTML;
         }
 
-        // Ogohlantirish xabari
         alert(`🚨 DIQQAT!\n\nBarcha FVV qismlariga xabar berildi.\n\nENG YAQIN QUTQARUV QISMI:\n${nearestUnit.name}\nMasofa: ${minDistance.toFixed(1)} km\n\nQutqaruv guruhi hodisa joyiga yo'naltirildi!`);
     }
 </script>
