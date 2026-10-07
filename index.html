@@ -596,5 +596,37 @@
             addLog("Hisobot yuklab olindi.");
         }
     </script>
+    // Serverga avtomattik ulanish (Render uchun wss:// ishlatadi)
+const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const wsUrl = `${protocol}//${window.location.host}/ws`;
+const socket = new WebSocket(wsUrl);
+
+socket.onopen = () => {
+    console.log("✅ WebSocket serverga muvaffaqiyatli ulandi!");
+};
+
+socket.onmessage = (event) => {
+    try {
+        const data = JSON.parse(event.data);
+        if (Array.isArray(data)) {
+            // Serverdan kelgan poyezdlar ma'lumotini saqlaymiz va ekranga chiqaramiz
+            trainDataGlobal = data;
+            if (typeof renderTrains === 'function') {
+                renderTrains(trainDataGlobal);
+            }
+        }
+    } catch (err) {
+        console.error("Ma'lumot o'qishda xatolik:", err);
+    }
+};
+
+socket.onerror = (error) => {
+    console.error("❌ WebSocket xatosi:", error);
+};
+
+socket.onclose = () => {
+    console.warn("⚠️ WebSocket uzildi. Qayta ulanmoqda...");
+    setTimeout(() => location.reload(), 5000);
+};
 </body>
 </html>
