@@ -7,12 +7,10 @@ from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 
-# PostgreSQL Baza Ulanish Satri
 DATABASE_URL = "postgresql://postgres1:TWgnz5UoW6XQe54w7cRgU6LNepo2eZhs@dpg-dae6iron74is73cjgu3g-a:5432/railway_db_glvt"
 
 db_pool = None
 
-# Initial poyezdlar ro'yxati (Baza bo'sh bo'lsa avto-yuklanadi)
 INITIAL_TRAINS = [
     ('AFR-01', 'Afrosiyob Express', 'high_speed', 'Toshkent - Samarqand - Buxoro', 'Yo''lovchi', 40.5000, 68.2000, 210, True, 5, 'Harakatlanmoqda 🟢', 'O. Zokirov', False),
     ('AFR-02', 'Afrosiyob Tezkor', 'high_speed', 'Buxoro - Samarqand - Toshkent', 'Yo''lovchi', 39.8500, 64.6000, 195, True, 8, 'Harakatlanmoqda 🟢', 'A. Karimov', False),
@@ -34,7 +32,6 @@ async def startup():
         print("✅ PostgreSQL Bazasiga muvaffaqiyatli ulandi!")
         
         async with db_pool.acquire() as conn:
-            # 1. Jadval mavjud bo'lmasa yaratamiz
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS trains (
                     id VARCHAR(50) PRIMARY KEY,
@@ -54,15 +51,14 @@ async def startup():
                 );
             """)
             
-            # 2. Bazani to'liq tozalaymiz va 10 ta poyezdni qayta yuklaymiz
+            # Eski ma'lumotlarni o'chirib 10 ta poyezdni qayta joylaymiz
             await conn.execute("TRUNCATE TABLE trains RESTART IDENTITY;")
-            
             for t in INITIAL_TRAINS:
                 await conn.execute("""
                     INSERT INTO trains (id, name, type, route, cargo_type, latitude, longitude, speed, is_moving, risk_level, status, driver, emergency)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
                 """, *t)
-            print("✅ Barcha 10 ta poyezd bazaga majburiy qayta yuklandi va tayyorlandi!")
+            print("✅ 10 ta poyezd bazaga to'liq yuklandi!")
 
     except Exception as e:
         print(f"❌ Bazaga ulanishda xatolik: {e}")
@@ -82,12 +78,15 @@ async def fetch_trains_from_db():
         return []
     try:
         async with db_pool.acquire() as conn:
-            rows = await conn.fetch("""
-                SELECT id, name, type, route, cargo_type, latitude as lat, longitude as lng,
-                       speed, is_moving, risk_level, status, driver, emergency
-                FROM trains
-            """)
-            return [dict(row) for row in rows]
+            # latitude va longitude nomlarini o'z holicha olamiz hamda lat/lng dublikat qilib beramiz
+            rows = await conn.fetch("SELECT * FROM trains ORDER BY id ASC;")
+            result = []
+            for row in rows:
+                d = dict(row)
+                d['lat'] = d['latitude']
+                d['lng'] = d['longitude']
+                result.append(d)
+            return result
     except Exception as e:
         print(f"❌ Ma'lumotlarni olishda xatolik: {e}")
         return []
