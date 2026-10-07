@@ -595,38 +595,63 @@
             document.body.removeChild(link);
             addLog("Hisobot yuklab olindi.");
         }
-    // Serverga avtomattik ulanish (Render uchun wss:// ishlatadi)
-const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-const wsUrl = `${protocol}//${window.location.host}/ws`;
-const socket = new WebSocket(wsUrl);
-
-socket.onopen = () => {
-    console.log("✅ WebSocket serverga muvaffaqiyatli ulandi!");
-};
-
-socket.onmessage = (event) => {
+    function connectWebSocket() {
     try {
-        const data = JSON.parse(event.data);
-        if (Array.isArray(data)) {
-            // Serverdan kelgan poyezdlar ma'lumotini saqlaymiz va ekranga chiqaramiz
-            trainDataGlobal = data;
-            if (typeof renderTrains === 'function') {
-                renderTrains(trainDataGlobal);
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+            console.log("✅ WebSocket serverga muvaffaqiyatli ulandi!");
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (Array.isArray(data) && data.length > 0) {
+                    // Global o'zgaruvchini yangilaymiz
+                    trainDataGlobal = data;
+
+                    // 1. "Jami Obyektlar", "Avariyalar" va "O'rtacha Tezlik" hisoblagichlarini yangilash
+                    const totalElem = document.getElementById('total-trains');
+                    if (totalElem) totalElem.innerText = data.length;
+
+                    const emergencyElem = document.getElementById('emergency-count');
+                    if (emergencyElem) {
+                        emergencyElem.innerText = data.filter(t => t.emergency).length;
+                    }
+
+                    const avgSpeedElem = document.getElementById('avg-speed');
+                    if (avgSpeedElem && data.length > 0) {
+                        const totalSpeed = data.reduce((sum, t) => sum + (t.speed || 0), 0);
+                        avgSpeedElem.innerText = `${Math.round(totalSpeed / data.length)} km/h`;
+                    }
+
+                    // 2. Poyezdlar ro'yxatini qayta chizish
+                    if (typeof renderTrains === 'function') {
+                        renderTrains(data);
+                    } else if (typeof renderTrainList === 'function') {
+                        renderTrainList(data);
+                    }
+
+                    // 3. Xaritadagi belgilarni yangilash
+                    if (typeof updateMap === 'function') {
+                        updateMap(data);
+                    } else if (typeof renderMapMarkers === 'function') {
+                        renderMapMarkers(data);
+                    }
+                }
+            } catch (err) {
+                console.error("Ma'lumotni qayta ishlashda xatolik:", err);
             }
-        }
-    } catch (err) {
-        console.error("Ma'lumot o'qishda xatolik:", err);
+        };
+
+        ws.onclose = () => { setTimeout(connectWebSocket, 5000); };
+        ws.onerror = (err) => { console.error("WS Xatosi:", err); };
+    } catch(e) {
+        console.log("WebSocket xatosi:", e);
     }
-};
-
-socket.onerror = (error) => {
-    console.error("❌ WebSocket xatosi:", error);
-};
-
-socket.onclose = () => {
-    console.warn("⚠️ WebSocket uzildi. Qayta ulanmoqda...");
-    setTimeout(() => location.reload(), 5000);
-};
+}
  </script>
 </body>
 </html>
