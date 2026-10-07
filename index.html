@@ -595,7 +595,6 @@
             document.body.removeChild(link);
             addLog("Hisobot yuklab olindi.");
         }
-    </script>
     // Serverga avtomattik ulanish (Render uchun wss:// ishlatadi)
 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -628,5 +627,6 @@ socket.onclose = () => {
     console.warn("⚠️ WebSocket uzildi. Qayta ulanmoqda...");
     setTimeout(() => location.reload(), 5000);
 };
+ </script>
 </body>
 </html>
