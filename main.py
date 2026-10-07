@@ -33,7 +33,6 @@ async def startup():
         db_pool = await asyncpg.create_pool(DATABASE_URL)
         print("✅ PostgreSQL Bazasiga muvaffaqiyatli ulandi!")
         
-        # Jadval yaratish va 10 ta poyezdni avtomatik joylash
         async with db_pool.acquire() as conn:
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS trains (
@@ -54,15 +53,14 @@ async def startup():
                 );
             """)
             
-            # Agar baza bo'sh bo'lsa, poyezdlarni qo'shadi
-            count = await conn.fetchval("SELECT COUNT(*) FROM trains;")
-            if count == 0:
-                for t in INITIAL_TRAINS:
-                    await conn.execute("""
-                        INSERT INTO trains (id, name, type, route, cargo_type, latitude, longitude, speed, is_moving, risk_level, status, driver, emergency)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-                    """, *t)
-                print("✅ Bazaga 10 ta dastlabki poyezdlar kiritildi!")
+            # Har safar server yoqilganda 10 ta poyezd bo'lishini ta'minlash (ON CONFLICT DO NOTHING)
+            for t in INITIAL_TRAINS:
+                await conn.execute("""
+                    INSERT INTO trains (id, name, type, route, cargo_type, latitude, longitude, speed, is_moving, risk_level, status, driver, emergency)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                    ON CONFLICT (id) DO NOTHING;
+                """, *t)
+            print("✅ 10 ta poyezd bazada tekshirildi va tayyorlandi!")
 
     except Exception as e:
         print(f"❌ Bazaga ulanishda xatolik: {e}")
