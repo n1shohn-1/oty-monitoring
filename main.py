@@ -34,6 +34,7 @@ async def startup():
         print("✅ PostgreSQL Bazasiga muvaffaqiyatli ulandi!")
         
         async with db_pool.acquire() as conn:
+            # 1. Jadval mavjud bo'lmasa yaratamiz
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS trains (
                     id VARCHAR(50) PRIMARY KEY,
@@ -53,14 +54,15 @@ async def startup():
                 );
             """)
             
-            # Har safar server yoqilganda 10 ta poyezd bo'lishini ta'minlash (ON CONFLICT DO NOTHING)
+            # 2. Bazani to'liq tozalaymiz va 10 ta poyezdni qayta yuklaymiz
+            await conn.execute("TRUNCATE TABLE trains RESTART IDENTITY;")
+            
             for t in INITIAL_TRAINS:
                 await conn.execute("""
                     INSERT INTO trains (id, name, type, route, cargo_type, latitude, longitude, speed, is_moving, risk_level, status, driver, emergency)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-                    ON CONFLICT (id) DO NOTHING;
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
                 """, *t)
-            print("✅ 10 ta poyezd bazada tekshirildi va tayyorlandi!")
+            print("✅ Barcha 10 ta poyezd bazaga majburiy qayta yuklandi va tayyorlandi!")
 
     except Exception as e:
         print(f"❌ Bazaga ulanishda xatolik: {e}")
