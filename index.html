@@ -76,30 +76,30 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.4);
         }
 
-        /* Temir yo'l chiziqlari uchun lampochka/neon nurlanish effekti */
-        @keyframes line-pulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.9)); }
-            100% { opacity: 0.4; }
+        /* Temir yo'l chiziqlari uchun lampochka kabi yonib-o'chuvchi neon effekti */
+        @keyframes rail-glow {
+            0% { stroke-opacity: 0.3; filter: drop-shadow(0 0 2px rgba(255, 193, 7, 0.3)); }
+            50% { stroke-opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.9)); }
+            100% { stroke-opacity: 0.3; filter: drop-shadow(0 0 2px rgba(255, 193, 7, 0.3)); }
         }
-        .glowing-rail {
-            animation: line-pulse 2.5s infinite ease-in-out;
+        .glowing-rail-path {
+            animation: rail-glow 2s infinite ease-in-out;
         }
 
         /* Shartli belgilar paneli (Legend) */
         .map-legend {
-            background: rgba(10, 17, 40, 0.9);
+            background: rgba(10, 17, 40, 0.95);
             color: #fff;
-            padding: 10px 14px;
+            padding: 12px 16px;
             border-radius: 8px;
             border: 1px solid #2A437E;
             font-size: 11px;
-            line-height: 1.5;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
+            line-height: 1.6;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            max-width: 240px;
         }
 
-        /* Skroll dizayni */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0A1128; }
         ::-webkit-scrollbar-thumb { background: #2A437E; border-radius: 4px; }
@@ -109,29 +109,19 @@
 <body class="bg-navy-900 text-slate-100 font-sans h-screen flex flex-col lg:flex-row overflow-hidden selection:bg-blue-600 selection:text-white">
     <!-- CHAP TOMON: Boshqaruv Paneli -->
     <aside class="w-full lg:w-[420px] bg-navy-800 border-r border-navy-600 shadow-xl flex flex-col h-full z-20">
-        
-       <!-- Yuqori sarlavha va FVV Logotipi -->
        <div class="bg-navy-900 border-b-2 border-fvv-yellow p-4 flex items-center gap-4 shrink-0">
            <div class="w-20 h-20 flex items-center justify-center shrink-0">
-               <img src="https://pub-5deb0ec8de0b43cf878f565588c0d10f.r2.dev/images/FVV.png" 
-                    alt="FVV Logo" 
-                    class="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,193,7,0.5)]">
+               <img src="https://pub-5deb0ec8de0b43cf878f565588c0d10f.r2.dev/images/FVV.png" alt="FVV Logo" class="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,193,7,0.5)]">
            </div>
            <div class="flex flex-col justify-center min-w-0">
-               <h1 class="text-xl font-bold uppercase tracking-wide leading-none text-white whitespace-nowrap">
-                   MONITORING MARKAZI
-               </h1>
+               <h1 class="text-xl font-bold uppercase tracking-wide leading-none text-white whitespace-nowrap">MONITORING MARKAZI</h1>
                <p class="text-fvv-yellow text-xs font-semibold mt-1.5 leading-snug">
-                   O'zbekiston Respublikasi<br>
-                   Favqulodda Vaziyatlar Vazirligi<br>
-                   FVV va O'TY
+                   O'zbekiston Respublikasi<br>Favqulodda Vaziyatlar Vazirligi<br>FVV va O'TY
                </p>
            </div>
        </div>
 
-        <!-- Panel ichidagi kontent -->
         <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
-            <!-- Statistika -->
             <div>
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Ko'rsatkichlari</h2>
                 <div class="grid grid-cols-2 gap-3">
@@ -150,11 +140,9 @@
                 </div>
             </div>
 
-            <!-- Qidiruv va Filtrlash -->
             <div class="border-t border-navy-600 pt-5">
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Qidiruv va Filtrlash</h2>
-                <input type="text" id="search-input" onkeyup="filterOrSearchTrain()" placeholder="Poyezd ID yoki nomini yozing..." 
-                       class="w-full bg-navy-900 border border-navy-600 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-fvv-yellow mb-4 transition-all shadow-sm">
+                <input type="text" id="search-input" onkeyup="filterOrSearchTrain()" placeholder="Poyezd ID yoki nomini yozing..." class="w-full bg-navy-900 border border-navy-600 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-fvv-yellow mb-4 shadow-sm">
                 <div class="grid grid-cols-2 gap-2 text-sm font-medium">
                     <button onclick="setFilter('all')" class="bg-navy-600 hover:bg-navy-700 text-white py-2.5 rounded-md transition-colors">Barchasi</button>
                     <button onclick="setFilter('passenger')" class="bg-fvv-green/20 hover:bg-fvv-green/30 text-fvv-green border border-fvv-green/40 py-2.5 rounded-md transition-colors">Yo'lovchi</button>
@@ -163,19 +151,14 @@
                 </div>
             </div>
 
-            <!-- Favqulodda Holat Boshqaruvi -->
             <div class="border-t border-navy-600 pt-5 bg-fvv-red/10 p-3 rounded-lg border border-fvv-red/30">
                 <h2 class="text-xs font-bold text-fvv-red uppercase mb-3 bg-fvv-red/20 inline-block px-2 py-1 rounded">Diqqat: Favqulodda Boshqaruv</h2>
                 <select id="train-select" onchange="onTrainSelectChange()" class="w-full bg-navy-900 border border-navy-600 text-white rounded-md px-4 py-3 text-sm focus:outline-none focus:border-fvv-red mb-3 shadow-sm">
                     <option value="">-- Poyezdni tanlang --</option>
                 </select>
                 <div class="grid grid-cols-2 gap-3 mb-3">
-                    <button onclick="triggerSelectedEmergency()" class="bg-fvv-red hover:bg-red-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">
-                        Xavf E'lon Qilish
-                    </button>
-                    <button onclick="resetSelectedEmergency()" class="bg-fvv-green hover:bg-green-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">
-                        Holatni Normallashtirish
-                    </button>
+                    <button onclick="triggerSelectedEmergency()" class="bg-fvv-red hover:bg-red-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">Xavf E'lon Qilish</button>
+                    <button onclick="resetSelectedEmergency()" class="bg-fvv-green hover:bg-green-700 text-white font-bold py-3 rounded-md shadow-md transition-colors text-sm">Holatni Normallashtirish</button>
                 </div>
                 <button onclick="alertAllUnitsAndDispatch()" class="w-full bg-fvv-red hover:bg-red-700 text-white font-extrabold py-3 rounded-md shadow-[0_0_12px_rgba(220,53,69,0.6)] transition-all text-xs uppercase mb-3 border border-red-400">
                     AVARIYA HAQIDA BARCHA QISMLARGA XABAR YUBORISH VA ENG YAQININI JALB ETISH
@@ -185,19 +168,15 @@
                 </button>
             </div>
 
-            <!-- Jurnal (Logs) -->
             <div class="border-t border-navy-600 pt-5 flex-1 flex flex-col min-h-[200px]">
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Jurnali (Oxirgi hodisalar)</h2>
-                <div id="incident-log" class="bg-navy-900 border border-navy-600 rounded-md p-3 flex-1 overflow-y-auto space-y-2 font-mono text-xs">
-                    <!-- Xabarlar shu yerga tushadi -->
-                </div>
+                <div id="incident-log" class="bg-navy-900 border border-navy-600 rounded-md p-3 flex-1 overflow-y-auto space-y-2 font-mono text-xs"></div>
             </div>
         </div>
     </aside>
 
     <!-- O'NG TOMON: Xarita -->
     <main class="flex-1 relative z-10 bg-navy-900">
-        <!-- Toast Notification -->
         <div id="toast-container" class="absolute top-6 left-1/2 -translate-x-1/2 z-[2000] hidden w-11/12 max-w-2xl">
             <div class="bg-fvv-red text-white px-6 py-4 rounded-lg shadow-2xl font-bold flex flex-col md:flex-row items-center justify-between border-4 border-white">
                 <div class="flex items-center gap-4 mb-2 md:mb-0">
@@ -226,38 +205,44 @@
             .then(res => res.json())
             .then(data => {
                 L.geoJSON(data, {
-                    style: {
-                        color: '#3b82f6',
-                        weight: 3,
-                        opacity: 0.8,
-                        fillColor: '#1e3a8a',
-                        fillOpacity: 0.15
-                    }
+                    style: { color: '#3b82f6', weight: 3, opacity: 0.8, fillColor: '#1e3a8a', fillOpacity: 0.15 }
                 }).addTo(map);
             })
             .catch(err => console.log("Chegara yuklanmadi:", err));
 
-        // Temir yo'l chiziqlari (Jonli lampochka/neon effekti bilan)
-        const railwayLines = [
-            [[41.2995, 69.2401], [40.1250, 67.8800], [39.7747, 64.4286], [41.3800, 61.3600]],
-            [[41.2995, 69.2401], [41.1100, 70.1500], [40.9200, 71.3200]],
-            [[40.1250, 67.8800], [38.8605, 65.7890]]
+        // TO'LIQ TEMIR YO'L LINIYALARI (Toshkentdan Nukus, Xiva, Farg'ona vodiysi va Termizgacha)
+        const railwayLinesData = [
+            { name: "Afrosiyob Yuqori tezlikdagi yo'nalishi (Toshkent-Samarqand-Buxoro)", coords: [[41.2995, 69.2401], [40.1250, 67.8800], [39.7747, 64.4286]], color: '#3b82f6', weight: 5 },
+            { name: "Sharq yo'nalishi (Toshkent - Qo'qon - Andijon)", coords: [[41.2995, 69.2401], [41.1100, 70.1500], [40.9200, 71.3200], [40.7829, 72.3442]], color: '#10b981', weight: 4 },
+            { name: "G‘arbiy magistral (Buxoro - Urganch - Nukus)", coords: [[39.7747, 64.4286], [41.5600, 60.6300], [42.4647, 59.6008], [43.7667, 59.0833]], color: '#FFC107', weight: 4 },
+            { name: "Janubiy magistral (Samarqand - Qarshi - Termiz)", coords: [[39.7747, 64.4286], [38.8605, 65.7890], [37.2242, 67.2783]], color: '#f97316', weight: 4 },
+            { name: "Toshkent halqa va Angren liniyasi", coords: [[41.2995, 69.2401], [41.0167, 70.1433]], color: '#a855f7', weight: 3 }
         ];
-        railwayLines.forEach(line => {
-            L.polyline(line, { color: '#FFC107', weight: 4, opacity: 0.8, dashArray: '10, 10' }).addTo(map);
+
+        // Liniyalarni xaritaga chizish va neon porlash (yonib-o'chish) effektini berish
+        railwayLinesData.forEach(rail => {
+            // Asosiy fon liniyasi
+            L.polyline(rail.coords, { color: rail.color, weight: rail.weight, opacity: 0.6 }).addTo(map);
+            // Ustidan yonib-o'chuvchi qatlam
+            const glowingLine = L.polyline(rail.coords, { color: '#ffffff', weight: rail.weight - 1, opacity: 0.9, className: 'glowing-rail-path' });
+            glowingLine.bindPopup(`<b>🚆 Temir yo'l yo'nalishi:</b><br>${rail.name}`);
+            glowingLine.addTo(map);
         });
 
-        // Xaritaga Shartli Belgilar (Legend) Panelini qo'shish
+        // SHARTLI BELGILAR (Legend) - Boyitilgan ma'lumotlar bilan
         const legendControl = L.control({position: 'bottomright'});
         legendControl.onAdd = function (map) {
             const div = L.DomUtil.create('div', 'map-legend');
             div.innerHTML = `
-                <b class="text-yellow-400 block mb-1 font-bold uppercase border-b border-blue-800 pb-1">Shartli Belgilar</b>
-                <div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 bg-red-500 rounded-full inline-block border border-white"></span> Avariya / Yong'in (🔥)</div>
-                <div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 bg-emerald-500 rounded-full inline-block border border-white"></span> Yo'lovchi poyezdi</div>
-                <div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 bg-blue-500 rounded-full inline-block border border-white"></span> Yuk / Neft poyezdi</div>
-                <div class="flex items-center gap-2 mb-1"><span class="w-4 h-1 bg-yellow-400 inline-block border border-dashed border-white"></span> Temir yo'l liniyasi</div>
-                <div class="flex items-center gap-2"><span class="w-3 h-3 bg-red-600 rounded-full inline-block border border-white"></span> FVV Qutqaruv Qismi</div>
+                <b class="text-yellow-400 block mb-2 font-bold uppercase border-b border-blue-800 pb-1 text-xs">Shartli Belgilar va Tarmoqlar</b>
+                <div class="flex items-center gap-2 mb-1.5"><span class="w-3 h-3 bg-red-500 rounded-full inline-block border border-white shrink-0"></span> Avariya / Yong'in holati (🔥)</div>
+                <div class="flex items-center gap-2 mb-1.5"><span class="w-3 h-3 bg-emerald-500 rounded-full inline-block border border-white shrink-0"></span> Yo'lovchi poyezdi</div>
+                <div class="flex items-center gap-2 mb-1.5"><span class="w-3 h-3 bg-blue-500 rounded-full inline-block border border-white shrink-0"></span> Yuk / Neft poyezdi</div>
+                <div class="flex items-center gap-2 mb-1.5"><span class="w-4 h-1.5 bg-blue-500 inline-block shrink-0"></span> Afrosiyob tezyurar liniyasi</div>
+                <div class="flex items-center gap-2 mb-1.5"><span class="w-4 h-1.5 bg-emerald-500 inline-block shrink-0"></span> Sharq (Vodiy) yo'nalishi</div>
+                <div class="flex items-center gap-2 mb-1.5"><span class="w-4 h-1.5 bg-yellow-400 inline-block shrink-0"></span> G'arbiy (Nukus/Xiva) liniyasi</div>
+                <div class="flex items-center gap-2 mb-1.5"><span class="w-4 h-1.5 bg-orange-500 inline-block shrink-0"></span> Janubiy (Termiz) liniyasi</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 bg-red-600 rounded-full inline-block border border-white shrink-0"></span> FVV Qutqaruv Otryadi</div>
             `;
             return div;
         };
@@ -265,38 +250,20 @@
 
         // 2. Respublika Qutqaruv Qismlari Ro'yxati
         let rescueUnits = [
-            { name: "Yunusobod t. 4-YoQQ", lat: 41.3642, lng: 69.2897 },
-            { name: "Mirzo Ulug'bek t. 5-YoQQ", lat: 41.3385, lng: 69.3341 },
-            { name: "Yashnabod t. 8-YoQQ", lat: 41.2911, lng: 69.3289 },
-            { name: "Mirobod t. 2-YoQQ", lat: 41.2856, lng: 69.2783 },
-            { name: "Sergeli t. 10-YoQQ", lat: 41.2214, lng: 69.2203 },
-            { name: "Yangihayot t. 14-YoQQ", lat: 41.1853, lng: 69.2012 },
-            { name: "Yakkasaroy t. 1-YoQQ", lat: 41.2764, lng: 69.2511 },
-            { name: "Chilonzor t. 7-YoQQ", lat: 41.2721, lng: 69.1983 },
-            { name: "Uchtepa t. 11-YoQQ", lat: 41.2905, lng: 69.1672 },
-            { name: "Shayxontohur t. 3-YoQQ", lat: 41.3201, lng: 69.2312 },
-            { name: "Olmazor t. 6-YoQQ", lat: 41.3512, lng: 69.2154 },
             { name: "Toshkent sh. Markaziy Qutqaruv Otryadi", lat: 41.2995, lng: 69.2401 },
-            { name: "Chirchiq sh. 3-YoQQ", lat: 41.4689, lng: 69.5822 },
             { name: "Angren sh. 12-YoQQ", lat: 41.0167, lng: 70.1433 },
-            { name: "Olmaliq sh. 5-YoQQ", lat: 40.8458, lng: 69.5986 },
-            { name: "Yangiyo'l sh. 15-YoQQ", lat: 41.1167, lng: 69.0500 },
-            { name: "Bekobod sh. 9-YoQQ", lat: 40.2167, lng: 69.2167 },
-            { name: "Nurafshon sh. (Viloyat Boshqarmasi YoQQ)", lat: 41.0422, lng: 69.3611 },
-            { name: "Ohanqaron sh. 8-YoQQ", lat: 40.9064, lng: 69.6383 },
-            { name: "Qibray t. 16-YoQQ", lat: 41.3897, lng: 69.4651 },
-            { name: "Toshkent t. 13-YoQQ", lat: 41.4123, lng: 69.2134 },
-            { name: "Zangiota t. 20-YoQQ", lat: 41.1964, lng: 69.1411 },
-            { name: "Chinoz t. 19-YoQQ", lat: 40.9333, lng: 68.7667 },
-            { name: "Sirdaryo v. FVB Qutqaruv Qismi", lat: 40.8373, lng: 68.6618 },
             { name: "Samarqand v. FVB Qutqaruv Qismi", lat: 39.6542, lng: 66.9597 },
-            { name: "Qamchiq Dovoni Maxsus Qutqaruv Otryadi", lat: 41.1500, lng: 70.5000 },
-            { name: "Buxoro v. FVB Harbiy-Qutqaruv Qismi", lat: 39.7747, lng: 64.4286 }
+            { name: "Qamchiq Dovoni Maxsus Otryadi", lat: 41.1500, lng: 70.5000 },
+            { name: "Buxoro v. FVB Harbiy-Qutqaruv Qismi", lat: 39.7747, lng: 64.4286 },
+            { name: "Qarshi sh. Qutqaruv Qismi", lat: 38.8605, lng: 65.7890 },
+            { name: "Termiz sh. Qutqaruv Qismi", lat: 37.2242, lng: 67.2783 },
+            { name: "Urganch sh. Qutqaruv Qismi", lat: 41.5600, lng: 60.6300 },
+            { name: "Nukus sh. Qutqaruv Qismi", lat: 42.4647, lng: 59.6008 }
         ];
 
         rescueUnits.forEach(unit => {
             const rescueIcon = L.divIcon({
-                className: 'custom-rescue-icon',
+                className: '',
                 html: `<div style="background-color: #ef4444; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 0 8px #ef4444;"></div>`,
                 iconSize: [12, 12],
                 iconAnchor: [6, 6]
@@ -307,9 +274,7 @@
         });
 
         // Xavfli zona - Qamchiq
-        const qamchiqZone = L.circle([41.1100, 70.1500], {
-            color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.2, radius: 35000
-        }).addTo(map);
+        const qamchiqZone = L.circle([41.1100, 70.1500], { color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.2, radius: 35000 }).addTo(map);
         qamchiqZone.bindPopup("<div class='p-2'><b class='text-red-600 text-sm block mb-1'>DIQQAT: Qamchiq Dovoni</b>Yuqori xavfli tog'li hudud.</div>");
 
         // Global o'zgaruvchilar
@@ -323,10 +288,16 @@
         let previousEmergencyState = false;
         let routeLine = null;
 
-        // O'zbek tilida ovozli sintez orqali xabar berish funksiyasi
+        // Yangilangan Trevoga Ovozi va O'zbekcha Nutq sintezi
+        const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
+        alarmSound.loop = true;
+
         function speakUzbekEmergency(trainName, route) {
+            // Trevoga ovozini chaling
+            alarmSound.play().catch(e => console.log("Ovozni ijro etishda cheklov:", e));
+            
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Avvalgi ovozni to'xtatish
+                window.speechSynthesis.cancel();
                 const text = `Diqqat! Diqqat! ${route} yo'nalishidagi ${trainName} poyezdi favqulodda vaziyatga uchradi! Zudlik bilan chora ko'ring!`;
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'uz-UZ';
@@ -336,12 +307,18 @@
             }
         }
 
-        // Tizim jurnali
+        function stopAlarm() {
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
         function addLog(message, isDanger = false) {
             const logBox = document.getElementById('incident-log');
             const time = new Date().toLocaleTimeString('uz-UZ', { hour12: false });
             const logEntry = document.createElement('div');
-            
             if(isDanger) {
                 logEntry.className = 'bg-fvv-red/20 border border-fvv-red/50 text-red-300 text-xs p-2 rounded';
                 logEntry.innerHTML = `<b class="text-fvv-red">[${time}] Avariya:</b> ${message}`;
@@ -353,11 +330,11 @@
         }
         addLog("Markaziy serverga ulanish muvaffaqiyatli amalga oshirildi.");
 
-        // Filtrlash va qidiruv
         function setFilter(filterType) {
             currentFilter = filterType;
             if (trainDataGlobal.length > 0) renderTrains(trainDataGlobal);
         }
+
         function filterOrSearchTrain() {
             const query = document.getElementById('search-input').value.toLowerCase();
             if(!query) return;
@@ -367,12 +344,13 @@
                 markers[foundTrain.id].openPopup();
             }
         }
+
         function showToast(msg) {
             const toast = document.getElementById('toast-container');
             document.getElementById('toast-message').innerText = msg;
             toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 10000);
         }
+
         function updateTrainSelectOptions(trains) {
             const select = document.getElementById('train-select');
             const currentValue = select.value;
@@ -385,6 +363,7 @@
                 select.appendChild(option);
             });
         }
+
         function onTrainSelectChange() {
             const trainId = document.getElementById('train-select').value;
             const train = trainDataGlobal.find(t => t.id === trainId);
@@ -397,17 +376,13 @@
             const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
         }
 
         function triggerSelectedEmergency() {
             const trainId = document.getElementById('train-select').value;
             if (!trainId) return alert("Avval ro'yxatdan poyezdni tanlang!");
-            
             const train = trainDataGlobal.find(t => t.id === trainId);
             if (train) {
                 train.emergency = true;
@@ -422,13 +397,13 @@
         function resetSelectedEmergency() {
             const trainId = document.getElementById('train-select').value;
             if (!trainId) return alert("Avval ro'yxatdan poyezdni tanlang!");
-            
             const train = trainDataGlobal.find(t => t.id === trainId);
             if (train) {
                 train.emergency = false;
                 train.status = "Harakatda";
                 train.speed = 70;
                 addLog(`${train.id} poyezdi holati normallashdi.`);
+                stopAlarm();
                 if (routeLine) {
                     map.removeLayer(routeLine);
                     routeLine = null;
@@ -440,21 +415,16 @@
         function alertAllUnitsAndDispatch() {
             const trainId = document.getElementById('train-select').value;
             let targetTrain = trainDataGlobal.find(t => t.id === trainId);
-            
-            if (!targetTrain && trainDataGlobal.length > 0) {
-                targetTrain = trainDataGlobal[0];
-            }
-            if (!targetTrain) {
-                return alert("Tizimda poyezdlar ma'lumoti topilmadi!");
-            }
-            
+            if (!targetTrain && trainDataGlobal.length > 0) targetTrain = trainDataGlobal[0];
+            if (!targetTrain) return alert("Tizimda poyezdlar ma'lumoti topilmadi!");
+
             targetTrain.emergency = true;
             targetTrain.status = "AVARIYA";
             targetTrain.speed = 0;
             renderTrains(trainDataGlobal);
             addLog(`🚨 RESPUBLIKA BO'YICHA BARCHA FVV QUTQARUV QISMLARIGA AVARIYA SIGNALI YUBORILDI!`, true);
             speakUzbekEmergency(targetTrain.name, targetTrain.route);
-            
+
             let nearestUnit = null;
             let minDistance = Infinity;
             rescueUnits.forEach(unit => {
@@ -464,36 +434,17 @@
                     nearestUnit = unit;
                 }
             });
+
             if (routeLine) map.removeLayer(routeLine);
-            routeLine = L.polyline([
-                [nearestUnit.lat, nearestUnit.lng],
-                [targetTrain.lat, targetTrain.lng]
-            ], {
-                color: '#FF0000',
-                weight: 5,
-                opacity: 0.9,
-                dashArray: '10, 10',
-                lineCap: 'round'
+            routeLine = L.polyline([[nearestUnit.lat, nearestUnit.lng], [targetTrain.lat, targetTrain.lng]], {
+                color: '#FF0000', weight: 5, opacity: 0.9, dashArray: '10, 10', lineCap: 'round'
             }).addTo(map);
+
             map.flyTo([targetTrain.lat, targetTrain.lng], 11, { animate: true, duration: 1.5 });
             addLog(`🚒 ENG YAQIN QUTQARUV QISMI: ${nearestUnit.name} (${minDistance.toFixed(1)} km). Safarbar etildi!`);
             showToast(`Avariya joyiga eng yaqin bo'lgan "${nearestUnit.name}" (${minDistance.toFixed(1)} km) jalb qilindi!`);
-            
-            L.popup()
-                .setLatLng([targetTrain.lat, targetTrain.lng])
-                .setContent(`
-                    <div style="color: #000; padding: 5px;">
-                        <h3 style="color: #dc2626; font-weight: bold; margin-bottom: 5px;">🚨 FAVQULODDA HOLAT!</h3>
-                        <b>Poyezd:</b> ${targetTrain.name} (${targetTrain.id})<br>
-                        <b>Holati:</b> <span style="color: red; font-weight: bold;">Avariya qayd etildi</span><br>
-                        <b>Biriktirilgan Qism:</b> ${nearestUnit.name}<br>
-                        <b>Qutqaruv masofasi:</b> ${minDistance.toFixed(1)} km
-                    </div>
-                `)
-                .openOn(map);
         }
 
-        // Render va markerlarni yangilash (Olov 🔥 belgisi bilan)
         function renderTrains(trains) {
             document.getElementById('total-trains').innerText = trains.length;
             updateTrainSelectOptions(trains);
@@ -516,7 +467,6 @@
 
                 let customIcon;
                 if (isEmergency) {
-                    // Avariya paytida olov/yong'in belgisi (🔥) chiqadi
                     customIcon = L.divIcon({
                         className: '',
                         html: `<div class="marker-emergency" style="width: 32px; height: 32px;">🔥</div>`,
@@ -548,7 +498,7 @@
                 if (markers[train.id]) {
                     const popupContent = `
                         <div style="font-family: Arial, sans-serif; min-width: 200px; padding: 5px;">
-                            <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; color: #1e293b; border-bottom: 2px solid ${isEmergency ? '#ef4444' : '#e2e8f0'}; padding-bottom: 5px;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; color: #1e293b; border-bottom: 2px solid ${isEmergency ? '#ef4444' : '#e2e8f0'}; pb: 5px;">
                                 ${train.name}
                             </h3>
                             <div style="font-size: 13px; line-height: 1.6; color: #475569;">
@@ -564,13 +514,8 @@
                 }
             });
 
-            if (hasActiveEmergency && !previousEmergencyState) {
-                showToast(`Tizimdagi ba'zi poyezdlarda favqulodda xavf qayd etildi! Operator zudlik bilan chora ko'rishi talab etiladi.`);
-                previousEmergencyState = true;
-            } else if (!hasActiveEmergency && previousEmergencyState) {
-                document.getElementById('toast-container').classList.add('hidden');
-                addLog(`Barcha xavflar bartaraf etildi. Holat normal.`);
-                previousEmergencyState = false;
+            if (!hasActiveEmergency) {
+                stopAlarm();
             }
 
             const avgSpeed = trains.length > 0 ? Math.round(totalSpeed / trains.length) : 0;
@@ -580,45 +525,30 @@
 
         renderTrains(trainDataGlobal);
 
-        // WebSocket ulanishi
         function connectWebSocket() {
             try {
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const wsUrl = `${protocol}//${window.location.host}/ws`;
-                const ws = new WebSocket(wsUrl);
-
-                ws.onopen = () => {
-                    console.log("✅ WebSocket serverga muvaffaqiyatli ulandi!");
-                };
+                const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
                 ws.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        if (Array.isArray(data) && data.length > 0) {
-                            trainDataGlobal = data;
-                            renderTrains(data);
-                        }
-                    } catch (err) {
-                        console.error("Ma'lumotni qayta ishlashda xatolik:", err);
+                    const data = JSON.parse(event.data);
+                    if (Array.isArray(data) && data.length > 0) {
+                        trainDataGlobal = data;
+                        renderTrains(data);
                     }
                 };
                 ws.onclose = () => { setTimeout(connectWebSocket, 5000); };
-                ws.onerror = (err) => { console.error("WS Xatosi:", err); };
-            } catch(e) {
-                console.log("WebSocket xatosi:", e);
-            }
+            } catch(e) { console.log("WebSocket xatosi:", e); }
         }
         connectWebSocket();
 
-        // Hisobotni yuklab olish (CSV)
         function exportToCSV() {
             if(trainDataGlobal.length === 0) return alert("Ma'lumotlar mavjud emas!");
             let csvContent = "data:text/csv;charset=utf-8,ID,Poyezd_Nomi,Turi,Yonalish,Tezlik(km/h),Holat,Mashinist,Kenglik,Uzunlik\n";
             trainDataGlobal.forEach(t => {
                 csvContent += `${t.id},${t.name},${t.type},${t.route},${t.speed},${t.emergency ? 'AVARIYA' : 'NORMAL'},${t.driver},${t.lat},${t.lng}\n`;
             });
-            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
+            link.setAttribute("href", encodeURI(csvContent));
             link.setAttribute("download", `Monitoring_Hisobot_${new Date().toLocaleDateString('uz-UZ')}.csv`);
             document.body.appendChild(link);
             link.click();
