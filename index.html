@@ -86,7 +86,7 @@
             animation: rail-glow 2.2s infinite ease-in-out;
         }
 
-        /* Shartli Belgilar Paneli */
+        /* Rasmga mos Shartli Belgilar Paneli */
         .map-legend {
             background: rgba(10, 17, 40, 0.95);
             color: #fff;
@@ -193,6 +193,7 @@
             </div>
         </div>
 
+        <!-- Masofalar Jadvali Pop-up -->
         <div id="distance-modal" class="absolute top-12 left-12 z-[2000] hidden bg-navy-800 border-2 border-fvv-yellow p-4 rounded-xl shadow-2xl max-w-md w-full">
             <div class="flex justify-between items-center mb-3 border-b border-navy-600 pb-2">
                 <h3 class="text-sm font-bold text-fvv-yellow uppercase">ASOSIY YO'NALISHLAR UZUNLIGI (KM)</h3>
@@ -218,6 +219,10 @@
                         <tr><td class="p-1.5 border border-navy-600">8</td><td class="p-1.5 border border-navy-600">Buxoro - Nukus</td><td class="p-1.5 border border-navy-600 font-bold text-yellow-400">723</td></tr>
                         <tr><td class="p-1.5 border border-navy-600">9</td><td class="p-1.5 border border-navy-600">Toshkent - Andijon</td><td class="p-1.5 border border-navy-600 font-bold text-yellow-400">358</td></tr>
                         <tr><td class="p-1.5 border border-navy-600">10</td><td class="p-1.5 border border-navy-600">Toshkent - Namangan</td><td class="p-1.5 border border-navy-600 font-bold text-yellow-400">305</td></tr>
+                        <tr><td class="p-1.5 border border-navy-600">11</td><td class="p-1.5 border border-navy-600">Toshkent - Qo'qon</td><td class="p-1.5 border border-navy-600 font-bold text-yellow-400">228</td></tr>
+                        <tr><td class="p-1.5 border border-navy-600">12</td><td class="p-1.5 border border-navy-600">Toshkent - Angren - Pop</td><td class="p-1.5 border border-navy-600 font-bold text-yellow-400">248</td></tr>
+                        <tr><td class="p-1.5 border border-navy-600">13</td><td class="p-1.5 border border-navy-600">Navoiy - Zarafshon - Uchquduq</td><td class="p-1.5 border border-navy-600 font-bold text-yellow-400">441</td></tr>
+                        <tr><td class="p-1.5 border border-navy-600">14</td><td class="p-1.5 border border-navy-600">Qarshi - Termiz</td><td class="p-1.5 border border-navy-600 font-bold text-yellow-400">270</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -241,85 +246,128 @@
                 }).addTo(map);
             });
 
-        // 1. POYEZDLAR YURADIGAN ANIQ TEMIR YO'L LINIYALARI PATH KORDINATALARI
-        const railRoutes = {
-            toshkent_buxoro: [[41.2995, 69.2401], [40.8667, 68.7667], [40.5012, 68.7881], [40.1158, 67.8422], [39.6542, 66.9597], [40.0844, 65.3792], [39.7747, 64.4286]],
-            toshkent_andijon: [[41.2995, 69.2401], [41.0167, 70.1433], [41.1500, 70.5000], [40.8736, 71.1075], [40.5286, 70.9425], [40.4686, 71.7843], [40.7829, 72.3442]],
-            samarqand_termiz: [[39.6542, 66.9597], [38.8605, 65.7890], [38.0000, 66.3000], [37.2242, 67.2783]],
-            buxoro_nukus: [[39.7747, 64.4286], [41.2000, 62.1000], [41.5600, 60.6300], [42.4647, 59.6008]],
-            navoiy_uchquduq: [[40.0844, 65.3792], [41.5722, 64.2011], [42.1556, 63.5544]]
-        };
-
+        // 1. RASMGA MOS TEMIR YO'L TARMOQLARI (Rang va Tur bo'yicha)
         const networkLines = [
-            { type: 'electric', color: '#3b82f6', weight: 4, coords: railRoutes.toshkent_buxoro },
-            { type: 'electric', color: '#10b981', weight: 4, coords: railRoutes.toshkent_andijon },
-            { type: 'electric', color: '#f97316', weight: 4, coords: railRoutes.samarqand_termiz },
-            { type: 'existing', color: '#FFC107', weight: 4, coords: railRoutes.buxoro_nukus },
-            { type: 'existing', color: '#dc2626', weight: 4, coords: railRoutes.navoiy_uchquduq }
+            // Qizil - Mavjud Temir yo'l liniyalari
+            { type: 'existing', color: '#dc2626', weight: 4, coords: [[41.2995, 69.2401], [40.8667, 68.7667], [40.5012, 68.7881], [40.1158, 67.8422], [39.6542, 66.9597]] },
+            { type: 'existing', color: '#dc2626', weight: 4, coords: [[39.6542, 66.9597], [40.0844, 65.3792], [39.7747, 64.4286]] },
+            { type: 'existing', color: '#dc2626', weight: 4, coords: [[40.0844, 65.3792], [41.5722, 64.2011], [42.1556, 63.5544]] }, // Uchquduq-Zarafshon
+            { type: 'existing', color: '#dc2626', weight: 4, coords: [[39.7747, 64.4286], [41.2000, 62.1000], [41.5600, 60.6300], [41.3783, 60.3553]] }, // Urganch-Xiva
+            { type: 'existing', color: '#dc2626', weight: 4, coords: [[41.5600, 60.6300], [42.4647, 59.6008]] }, // Nukus
+
+            // Ko'k - Elektrlashtirilgan Liniyalar (25 kV)
+            { type: 'electric', color: '#2563eb', weight: 4, coords: [[41.2995, 69.2401], [41.0167, 70.1433], [41.1500, 70.5000], [40.8736, 71.1075], [40.5286, 70.9425], [40.4686, 71.7843], [40.7829, 72.3442]] }, // Vodiy Ring
+            { type: 'electric', color: '#2563eb', weight: 4, coords: [[39.6542, 66.9597], [38.8605, 65.7890], [38.0000, 66.3000], [37.2242, 67.2783]] }, // Qarshi-Termiz
+
+            // Yashil - Elektrlashtirilishi rejalashtirilgan Liniyalar
+            { type: 'planned_elec', color: '#16a34a', weight: 3, coords: [[38.8605, 65.7890], [39.0833, 66.8333], [39.0692, 66.8333]] }, // Kitob-Shahrisabz
+            { type: 'planned_elec', color: '#16a34a', weight: 3, coords: [[37.2242, 67.2783], [38.2667, 67.8999], [37.2000, 67.4000]] }, // Denov-Sherobod
+
+            // Sariq Dash - Qurilayotgan va Loyihadagi Liniyalar
+            { type: 'construction', color: '#eab308', weight: 3, dash: '8, 8', coords: [[42.4647, 59.6008], [43.7667, 59.0833]] }, // Mo'ynoq/Ustyurt
+            { type: 'construction', color: '#eab308', weight: 3, dash: '8, 8', coords: [[41.5600, 60.6300], [41.8000, 60.1000]] }
         ];
 
         networkLines.forEach(line => {
             L.polyline(line.coords, {
                 color: line.color,
                 weight: line.weight,
+                dashArray: line.dash || null,
                 opacity: 0.85,
                 className: 'glowing-rail-path'
             }).addTo(map);
         });
 
-        // 2. BARCHA VILOYATLAR VA TUMANLARDAGI FVV QUTQARUV QISMLARI (CHAS)
+        // 2. VOKZALLAR VA YIRIK STANSIYALAR (Rasm bo'yicha)
+        const mainStations = [
+            { name: "Toshkent (Markaziy/Shimoliy/Janubiy)", lat: 41.2995, lng: 69.2401, type: "major" },
+            { name: "Salor Stansiyasi", lat: 41.3250, lng: 69.3100, type: "minor" },
+            { name: "Bektemir Stansiyasi", lat: 41.2300, lng: 69.3400, type: "minor" },
+            { name: "Angren Vokzali", lat: 41.0167, lng: 70.1433, type: "major" },
+            { name: "Pop Vokzali", lat: 40.8736, lng: 71.1075, type: "major" },
+            { name: "Qo'qon Vokzali", lat: 40.5286, lng: 70.9425, type: "major" },
+            { name: "Marg'ilon Vokzali", lat: 40.4686, lng: 71.7843, type: "major" },
+            { name: "Andijon Vokzali", lat: 40.7829, lng: 72.3442, type: "major" },
+            { name: "Namangan Vokzali", lat: 40.9983, lng: 71.6726, type: "major" },
+            { name: "Guliston Vokzali", lat: 40.5012, lng: 68.7881, type: "major" },
+            { name: "Jizzax Vokzali", lat: 40.1158, lng: 67.8422, type: "major" },
+            { name: "Samarqand Vokzali", lat: 39.6542, lng: 66.9597, type: "major" },
+            { name: "Kitob Stansiyasi", lat: 39.0833, lng: 66.8333, type: "minor" },
+            { name: "Shahrisabz Vokzali", lat: 39.0500, lng: 66.8300, type: "minor" },
+            { name: "Qarshi Vokzali", lat: 38.8605, lng: 65.7890, type: "major" },
+            { name: "G'uzor Stansiyasi", lat: 38.6200, lng: 66.2500, type: "minor" },
+            { name: "Denov Stansiyasi", lat: 38.2667, lng: 67.8999, type: "minor" },
+            { name: "Sherobod Stansiyasi", lat: 37.6700, lng: 67.0000, type: "minor" },
+            { name: "Termiz Vokzali", lat: 37.2242, lng: 67.2783, type: "major" },
+            { name: "Hayraton (Afg'oniston)", lat: 37.2000, lng: 67.4000, type: "minor" },
+            { name: "Navoiy Vokzali", lat: 40.0844, lng: 65.3792, type: "major" },
+            { name: "Zarafshon Stansiyasi", lat: 41.5722, lng: 64.2011, type: "minor" },
+            { name: "Uchquduq Vokzali", lat: 42.1556, lng: 63.5544, type: "major" },
+            { name: "Buxoro Vokzali", lat: 39.7747, lng: 64.4286, type: "major" },
+            { name: "Gazli Stansiyasi", lat: 40.1300, lng: 63.4500, type: "minor" },
+            { name: "Miskin Stansiyasi", lat: 41.2000, lng: 62.1000, type: "minor" },
+            { name: "Urganch Vokzali", lat: 41.5600, lng: 60.6300, type: "major" },
+            { name: "Xiva Vokzali", lat: 41.3783, lng: 60.3553, type: "major" },
+            { name: "Nukus Vokzali", lat: 42.4647, lng: 59.6008, type: "major" },
+            { name: "Mo'ynoq Stansiyasi", lat: 43.7667, lng: 59.0833, type: "minor" }
+        ];
+
+        mainStations.forEach(st => {
+            const size = st.type === 'major' ? 12 : 8;
+            const icon = L.divIcon({
+                className: '',
+                html: `<div style="background:#ffffff; width:${size}px; height:${size}px; border-radius:50%; border:2px solid #000000; box-shadow:0 0 5px #ffffff;"></div>`,
+                iconSize: [size, size],
+                iconAnchor: [size/2, size/2]
+            });
+            L.marker([st.lat, st.lng], { icon: icon }).bindPopup(`<b>🚉 ${st.name}</b><br>O'TY Temir Yo'l Stansiyasi`).addTo(map);
+        });
+
+        // 3. SHARTLI BELGILAR PANELI (RASM SHAKLIDA)
+        const legendControl = L.control({position: 'bottomright'});
+        legendControl.onAdd = function () {
+            const div = L.DomUtil.create('div', 'map-legend');
+            div.innerHTML = `
+                <b class="text-yellow-400 block mb-2 font-bold uppercase border-b border-blue-800 pb-1 text-xs">SHARTLI BELGILAR</b>
+                <div class="flex items-center gap-2 mb-1"><span class="w-4 h-1 bg-red-600 inline-block"></span> Mavjud temir yo'l liniyasi</div>
+                <div class="flex items-center gap-2 mb-1"><span class="w-4 h-1 bg-blue-600 inline-block"></span> Elektrlashtirilgan liniya (25 kV)</div>
+                <div class="flex items-center gap-2 mb-1"><span class="w-4 h-1 bg-green-600 inline-block"></span> Elektrlashtirilishi rejalashtirilgan</div>
+                <div class="flex items-center gap-2 mb-1"><span class="w-4 h-1 border-b-2 border-dashed border-yellow-400 inline-block"></span> Qurilayotgan / Loyihadagi liniya</div>
+                <div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 bg-white border-2 border-black rounded-full inline-block"></span> Asosiy vokzal va yirik stansiya</div>
+                <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 bg-white border border-black rounded-full inline-block"></span> Stansiya</div>
+                <div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 bg-red-500 rounded-full inline-block border border-white"></span> Avariya / Yong'in holati (🔥)</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 bg-red-600 rounded-full inline-block border border-white"></span> FVV Qutqaruv Qismi (CHAS)</div>
+            `;
+            return div;
+        };
+        legendControl.addTo(map);
+
+        // 4. BARCHA VILOYAT QUTQARUV QISMLARI (CHAS)
         let rescueUnits = [
-            // Toshkent Shahri
             { name: "Toshkent sh. Markaziy Qutqaruv Otryadi", lat: 41.2995, lng: 69.2401 },
             { name: "Yunusobod t. 4-YoQQ", lat: 41.3642, lng: 69.2897 },
             { name: "Mirzo Ulug'bek t. 5-YoQQ", lat: 41.3385, lng: 69.3341 },
             { name: "Yashnabod t. 8-YoQQ", lat: 41.2911, lng: 69.3289 },
             { name: "Mirobod t. 2-YoQQ", lat: 41.2856, lng: 69.2783 },
             { name: "Sergeli t. 10-YoQQ", lat: 41.2214, lng: 69.2203 },
-            { name: "Chilonzor t. 7-YoQQ", lat: 41.2721, lng: 69.1983 },
-            
-            // Toshkent Viloyati
             { name: "Chirchiq sh. 3-YoQQ", lat: 41.4689, lng: 69.5822 },
             { name: "Angren sh. 12-YoQQ", lat: 41.0167, lng: 70.1433 },
             { name: "Olmaliq sh. 5-YoQQ", lat: 40.8458, lng: 69.5986 },
             { name: "Bekobod sh. 9-YoQQ", lat: 40.2167, lng: 69.2167 },
-            { name: "Nurafshon sh. YoQQ", lat: 41.0422, lng: 69.3611 },
-
-            // Sirdaryo va Jizzax Viloyatlari
-            { name: "Guliston sh. FVB Qutqaruv Qismi", lat: 40.5012, lng: 68.7881 },
-            { name: "Sirdaryo t. YoQQ", lat: 40.8373, lng: 68.6618 },
-            { name: "Jizzax sh. FVB Qutqaruv Qismi", lat: 40.1158, lng: 67.8422 },
-            { name: "G'allaorol t. YoQQ", lat: 40.0211, lng: 67.5855 },
-
-            // Samarqand, Qashqadaryo va Surxondaryo Viloyatlari
-            { name: "Samarqand sh. FVB Qutqaruv Qismi", lat: 39.6542, lng: 66.9597 },
-            { name: "Kattaqo'rg'on sh. YoQQ", lat: 39.8964, lng: 66.2575 },
-            { name: "Qarshi sh. FVB Qutqaruv Qismi", lat: 38.8605, lng: 65.7890 },
-            { name: "Shahrisabz sh. YoQQ", lat: 39.0500, lng: 66.8300 },
-            { name: "G'uzor t. YoQQ", lat: 38.6200, lng: 66.2500 },
-            { name: "Termiz sh. FVB Qutqaruv Qismi", lat: 37.2242, lng: 67.2783 },
-            { name: "Denov t. YoQQ", lat: 38.2667, lng: 67.8999 },
-
-            // Buxoro, Navoiy, Xorazm va Qoraqalpog'iston
-            { name: "Buxoro sh. FVB Qutqaruv Qismi", lat: 39.7747, lng: 64.4286 },
-            { name: "Kogon sh. YoQQ", lat: 39.7225, lng: 64.5442 },
-            { name: "Navoiy sh. FVB Qutqaruv Qismi", lat: 40.0844, lng: 65.3792 },
-            { name: "Zarafshon sh. YoQQ", lat: 41.5722, lng: 64.2011 },
-            { name: "Uchquduq t. YoQQ", lat: 42.1556, lng: 63.5544 },
-            { name: "Urganch sh. FVB Qutqaruv Qismi", lat: 41.5600, lng: 60.6300 },
-            { name: "Xiva sh. YoQQ", lat: 41.3783, lng: 60.3553 },
-            { name: "Nukus sh. Qoraqalpog'iston FVB Otryadi", lat: 42.4647, lng: 59.6008 },
-            { name: "Qo'ng'irot t. YoQQ", lat: 43.0417, lng: 58.8500 },
-
-            // Farg'ona Vodiysi (Andijon, Namangan, Farg'ona)
+            { name: "Nurafshon sh. (Viloyat YoQQ)", lat: 41.0422, lng: 69.3611 },
+            { name: "Sirdaryo v. FVB Qutqaruv Qismi", lat: 40.5012, lng: 68.7881 },
+            { name: "Jizzax v. FVB Qutqaruv Qismi", lat: 40.1158, lng: 67.8422 },
+            { name: "Samarqand v. FVB Qutqaruv Qismi", lat: 39.6542, lng: 66.9597 },
             { name: "Qamchiq Dovoni Maxsus Otryadi", lat: 41.1500, lng: 70.5000 },
-            { name: "Pop t. YoQQ", lat: 40.8736, lng: 71.1075 },
-            { name: "Namangan sh. FVB Qutqaruv Qismi", lat: 40.9983, lng: 71.6726 },
-            { name: "Qo'qon sh. YoQQ", lat: 40.5286, lng: 70.9425 },
-            { name: "Marg'ilon sh. YoQQ", lat: 40.4686, lng: 71.7843 },
-            { name: "Farg'ona sh. FVB Qutqaruv Qismi", lat: 40.3842, lng: 71.7843 },
-            { name: "Andijon sh. FVB Qutqaruv Qismi", lat: 40.7829, lng: 72.3442 },
-            { name: "Asaka t. YoQQ", lat: 40.6417, lng: 72.2389 }
+            { name: "Navoiy v. FVB Qutqaruv Qismi", lat: 40.0844, lng: 65.3792 },
+            { name: "Buxoro v. FVB Qutqaruv Qismi", lat: 39.7747, lng: 64.4286 },
+            { name: "Qarshi sh. FVB Qutqaruv Qismi", lat: 38.8605, lng: 65.7890 },
+            { name: "Termiz sh. FVB Qutqaruv Qismi", lat: 37.2242, lng: 67.2783 },
+            { name: "Urganch sh. FVB Qutqaruv Qismi", lat: 41.5600, lng: 60.6300 },
+            { name: "Nukus sh. Qoraqalpog'iston FVB Otryadi", lat: 42.4647, lng: 59.6008 },
+            { name: "Andijon v. FVB Qutqaruv Qismi", lat: 40.7829, lng: 72.3442 },
+            { name: "Namangan v. FVB Qutqaruv Qismi", lat: 40.9983, lng: 71.6726 },
+            { name: "Farg'ona v. FVB Qutqaruv Qismi", lat: 40.3842, lng: 71.7843 }
         ];
 
         rescueUnits.forEach(unit => {
@@ -329,11 +377,10 @@
                 iconSize: [10, 10],
                 iconAnchor: [5, 5]
             });
-            L.marker([unit.lat, unit.lng], { icon: rescueIcon }).bindPopup(`<b>🚒 ${unit.name}</b><br>FVV Yong'in-Qutqaruv Qismi (CHAS)`).addTo(map);
+            L.marker([unit.lat, unit.lng], { icon: rescueIcon }).bindPopup(`<b>🚒 ${unit.name}</b><br>FVV Yong'in-Qutqaruv Qismi`).addTo(map);
         });
 
-        // 3. POYEZDLAR TAYYOR YO'NALISH LINIYASI BO'YICHA HARAKATLANADI
-        // Poyezdlar chiziq ustidan chiqib ketmaydi!
+        // 5. POYEZDLAR VA MONITORING LOGIKASI (10 Ta Poyezd)
         const markers = {};
         let trainDataGlobal = [
             { id: "AFR-01", name: "Afrosiyob Express", type: "passenger", route: "Toshkent - Samarqand - Buxoro", speed: 210, emergency: false, driver: "O. Zokirov", lat: 40.5000, lng: 68.2000, status: "Harakatlanmoqda 🟢" },
@@ -351,17 +398,25 @@
         let currentFilter = 'all';
         let routeLine = null;
 
-        // HAQIQIY FVV RESPUBLIKA SIRENA / TREVOGA SIGNAL OVOZI
-        const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
+        const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
         alarmSound.loop = true;
 
-        function playEmergencySiren() {
-            alarmSound.play().catch(e => console.log("Ovoz pleyeriga ruxsat berilmadi:", e));
+        function speakUzbekEmergency(trainName, route) {
+            alarmSound.play().catch(e => console.log(e));
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const text = `Diqqat! Diqqat! ${route} yo'nalishidagi ${trainName} poyezdi favqulodda vaziyatga uchradi! Zudlik bilan chora ko'ring!`;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'uz-UZ';
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
         }
 
         function stopAlarm() {
             alarmSound.pause();
             alarmSound.currentTime = 0;
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         }
 
         function toggleDistanceTable() {
@@ -436,7 +491,7 @@
                 train.status = "AVARIYA";
                 train.speed = 0;
                 addLog(`${train.id} (${train.name}) poyezdida xavf e'lon qilindi!`, true);
-                playEmergencySiren();
+                speakUzbekEmergency(train.name, train.route);
                 renderTrains(trainDataGlobal);
             }
         }
@@ -468,8 +523,8 @@
             targetTrain.status = "AVARIYA";
             targetTrain.speed = 0;
             renderTrains(trainDataGlobal);
-            addLog(`🚨 RESPUBLIKA BO'YICHA BARCHA FVV QUTQARUV QISMLARIGA AVARIYA SIGNALI YUBORILDI!`, true);
-            playEmergencySiren();
+            addLog(`🚨 BARCHA FVV QUTQARUV QISMLARIGA AVARIYA SIGNALI YUBORILDI!`, true);
+            speakUzbekEmergency(targetTrain.name, targetTrain.route);
 
             let nearestUnit = null;
             let minDistance = Infinity;
@@ -602,3 +657,4 @@
     </script>
 </body>
 </html>
+
