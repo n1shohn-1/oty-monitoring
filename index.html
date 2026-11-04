@@ -739,7 +739,7 @@
                 train.status = "AVARIYA";
                 train.speed = 0;
                 addLog(`${train.id} (${train.name}) poyezdida xavf e'lon qilindi!`, true);
-                speakUzbekEmergency(train.name, train.route);
+                playEmergencyAlarm();
                 renderTrains(trainDataGlobal);
             }
         }
@@ -771,7 +771,7 @@
             targetTrain.speed = 0;
             renderTrains(trainDataGlobal);
             addLog(`🚨 BARCHA FVV QUTQARUV QISMLARIGA AVARIYA SIGNALI YUBORILDI!`, true);
-            speakUzbekEmergency(targetTrain.name, targetTrain.route);
+            playEmergencyAlarm();
             let nearestUnit = null;
             let minDistance = Infinity;
             rescueUnits.forEach(unit => {
