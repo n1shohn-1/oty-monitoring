@@ -75,7 +75,6 @@
             border-radius: 50%;
             box-shadow: 0 2px 5px rgba(0,0,0,0.4);
         }
-
         /* Neon chiroq effekti */
         @keyframes rail-glow {
             0% { stroke-opacity: 0.4; filter: drop-shadow(0 0 2px currentColor); }
@@ -85,7 +84,6 @@
         .glowing-rail-path {
             animation: rail-glow 2.2s infinite ease-in-out;
         }
-
         /* Rasmga mos Shartli Belgilar Paneli */
         .map-legend {
             background: rgba(10, 17, 40, 0.95);
@@ -99,7 +97,6 @@
             backdrop-filter: blur(6px);
             width: 250px;
         }
-
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0A1128; }
         ::-webkit-scrollbar-thumb { background: #2A437E; border-radius: 4px; }
@@ -120,7 +117,6 @@
                </p>
            </div>
        </div>
-
         <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
             <div>
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Ko'rsatkichlari</h2>
@@ -139,7 +135,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="border-t border-navy-600 pt-5">
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Qidiruv va Filtrlash</h2>
                 <input type="text" id="search-input" onkeyup="filterOrSearchTrain()" placeholder="Poyezd ID yoki nomini yozing..." class="w-full bg-navy-900 border border-navy-600 rounded-md px-4 py-3 text-sm text-white focus:outline-none focus:border-fvv-yellow mb-4 shadow-sm">
@@ -150,7 +145,6 @@
                     <button onclick="setFilter('emergency')" class="bg-fvv-red/20 hover:bg-fvv-red/30 text-fvv-red border border-fvv-red/40 py-2.5 rounded-md">Favqulodda</button>
                 </div>
             </div>
-
             <div class="border-t border-navy-600 pt-5 bg-fvv-red/10 p-3 rounded-lg border border-fvv-red/30">
                 <h2 class="text-xs font-bold text-fvv-red uppercase mb-3 bg-fvv-red/20 inline-block px-2 py-1 rounded">Diqqat: Favqulodda Boshqaruv</h2>
                 <select id="train-select" onchange="onTrainSelectChange()" class="w-full bg-navy-900 border border-navy-600 text-white rounded-md px-4 py-3 text-sm focus:outline-none focus:border-fvv-red mb-3 shadow-sm">
@@ -170,14 +164,12 @@
                     Hisobotni Yuklab Olish (CSV)
                 </button>
             </div>
-
             <div class="border-t border-navy-600 pt-5 flex-1 flex flex-col min-h-[180px]">
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Jurnali</h2>
                 <div id="incident-log" class="bg-navy-900 border border-navy-600 rounded-md p-3 flex-1 overflow-y-auto space-y-2 font-mono text-xs"></div>
             </div>
         </div>
     </aside>
-
     <!-- O'NG TOMON: Xarita -->
     <main class="flex-1 relative z-10 bg-navy-900">
         <div id="toast-container" class="absolute top-6 left-1/2 -translate-x-1/2 z-[2000] hidden w-11/12 max-w-2xl">
@@ -192,7 +184,6 @@
                 <button onclick="document.getElementById('toast-container').classList.add('hidden')" class="bg-white text-fvv-red px-4 py-2 rounded text-sm hover:bg-red-50">Tushundim</button>
             </div>
         </div>
-
         <!-- Masofalar Jadvali Pop-up -->
         <div id="distance-modal" class="absolute top-12 left-12 z-[2000] hidden bg-navy-800 border-2 border-fvv-yellow p-4 rounded-xl shadow-2xl max-w-md w-full">
             <div class="flex justify-between items-center mb-3 border-b border-navy-600 pb-2">
@@ -227,10 +218,8 @@
                 </table>
             </div>
         </div>
-
         <div id="map" class="w-full h-full"></div>
     </main>
-
     <script>
         const map = L.map('map').setView([41.2995, 69.2401], 6);
         L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
@@ -248,23 +237,16 @@
 
         // 1. RASMGA MOS TEMIR YO'L TARMOQLARI (Rang va Tur bo'yicha)
         const networkLines = [
-            // Qizil - Mavjud Temir yo'l liniyalari
             { type: 'existing', color: '#dc2626', weight: 4, coords: [[41.2995, 69.2401], [40.8667, 68.7667], [40.5012, 68.7881], [40.1158, 67.8422], [39.6542, 66.9597]] },
             { type: 'existing', color: '#dc2626', weight: 4, coords: [[39.6542, 66.9597], [40.0844, 65.3792], [39.7747, 64.4286]] },
-            { type: 'existing', color: '#dc2626', weight: 4, coords: [[40.0844, 65.3792], [41.5722, 64.2011], [42.1556, 63.5544]] }, // Uchquduq-Zarafshon
-            { type: 'existing', color: '#dc2626', weight: 4, coords: [[39.7747, 64.4286], [41.2000, 62.1000], [41.5600, 60.6300], [41.3783, 60.3553]] }, // Urganch-Xiva
-            { type: 'existing', color: '#dc2626', weight: 4, coords: [[41.5600, 60.6300], [42.4647, 59.6008]] }, // Nukus
-
-            // Ko'k - Elektrlashtirilgan Liniyalar (25 kV)
-            { type: 'electric', color: '#2563eb', weight: 4, coords: [[41.2995, 69.2401], [41.0167, 70.1433], [41.1500, 70.5000], [40.8736, 71.1075], [40.5286, 70.9425], [40.4686, 71.7843], [40.7829, 72.3442]] }, // Vodiy Ring
-            { type: 'electric', color: '#2563eb', weight: 4, coords: [[39.6542, 66.9597], [38.8605, 65.7890], [38.0000, 66.3000], [37.2242, 67.2783]] }, // Qarshi-Termiz
-
-            // Yashil - Elektrlashtirilishi rejalashtirilgan Liniyalar
-            { type: 'planned_elec', color: '#16a34a', weight: 3, coords: [[38.8605, 65.7890], [39.0833, 66.8333], [39.0692, 66.8333]] }, // Kitob-Shahrisabz
-            { type: 'planned_elec', color: '#16a34a', weight: 3, coords: [[37.2242, 67.2783], [38.2667, 67.8999], [37.2000, 67.4000]] }, // Denov-Sherobod
-
-            // Sariq Dash - Qurilayotgan va Loyihadagi Liniyalar
-            { type: 'construction', color: '#eab308', weight: 3, dash: '8, 8', coords: [[42.4647, 59.6008], [43.7667, 59.0833]] }, // Mo'ynoq/Ustyurt
+            { type: 'existing', color: '#dc2626', weight: 4, coords: [[40.0844, 65.3792], [41.5722, 64.2011], [42.1556, 63.5544]] },
+            { type: 'existing', color: '#dc2626', weight: 4, coords: [[39.7747, 64.4286], [41.2000, 62.1000], [41.5600, 60.6300], [41.3783, 60.3553]] },
+            { type: 'existing', color: '#dc2626', weight: 4, coords: [[41.5600, 60.6300], [42.4647, 59.6008]] },
+            { type: 'electric', color: '#2563eb', weight: 4, coords: [[41.2995, 69.2401], [41.0167, 70.1433], [41.1500, 70.5000], [40.8736, 71.1075], [40.5286, 70.9425], [40.4686, 71.7843], [40.7829, 72.3442]] },
+            { type: 'electric', color: '#2563eb', weight: 4, coords: [[39.6542, 66.9597], [38.8605, 65.7890], [38.0000, 66.3000], [37.2242, 67.2783]] },
+            { type: 'planned_elec', color: '#16a34a', weight: 3, coords: [[38.8605, 65.7890], [39.0833, 66.8333], [39.0692, 66.8333]] },
+            { type: 'planned_elec', color: '#16a34a', weight: 3, coords: [[37.2242, 67.2783], [38.2667, 67.8999], [37.2000, 67.4000]] },
+            { type: 'construction', color: '#eab308', weight: 3, dash: '8, 8', coords: [[42.4647, 59.6008], [43.7667, 59.0833]] },
             { type: 'construction', color: '#eab308', weight: 3, dash: '8, 8', coords: [[41.5600, 60.6300], [41.8000, 60.1000]] }
         ];
 
@@ -380,35 +362,111 @@
             L.marker([unit.lat, unit.lng], { icon: rescueIcon }).bindPopup(`<b>🚒 ${unit.name}</b><br>FVV Yong'in-Qutqaruv Qismi`).addTo(map);
         });
 
-        // 5. POYEZDLAR VA MONITORING LOGIKASI (10 Ta Poyezd)
+        // 1-QADAM: Poyezdlarning yo'nalish koordinatalarini belgilash (Aniq temir yo'l yo'laklari)
+        const railPaths = {
+            toshkent_buxoro: [
+                [41.2995, 69.2401], // Toshkent
+                [40.8667, 68.7667], // Sirdaryo
+                [40.5012, 68.7881], // Guliston
+                [40.1158, 67.8422], // Jizzax
+                [39.6542, 66.9597], // Samarqand
+                [40.0844, 65.3792], // Navoiy
+                [39.7747, 64.4286]  // Buxoro
+            ],
+            toshkent_andijon: [
+                [41.2995, 69.2401], // Toshkent
+                [41.0167, 70.1433], // Angren
+                [41.1500, 70.5000], // Qamchiq
+                [40.8736, 71.1075], // Pop
+                [40.5286, 70.9425], // Qo'qon
+                [40.4686, 71.7843], // Marg'ilon
+                [40.7829, 72.3442]  // Andijon
+            ],
+            samarqand_termiz: [
+                [39.6542, 66.9597], // Samarqand
+                [38.8605, 65.7890], // Qarshi
+                [38.6200, 66.2500], // G'uzor
+                [38.2667, 67.8999], // Denov
+                [37.2242, 67.2783]  // Termiz
+            ],
+            buxoro_nukus: [
+                [39.7747, 64.4286], // Buxoro
+                [41.2000, 62.1000], // Miskin
+                [41.5600, 60.6300], // Urganch
+                [42.4647, 59.6008]  // Nukus
+            ]
+        };
+
+        // 5. POYEZDLAR VA MONITORING LOGIKASI (10 Ta Poyezd - liniyaga bog'langan)
         const markers = {};
         let trainDataGlobal = [
-            { id: "AFR-01", name: "Afrosiyob Express", type: "passenger", route: "Toshkent - Samarqand - Buxoro", speed: 210, emergency: false, driver: "O. Zokirov", lat: 40.5000, lng: 68.2000, status: "Harakatlanmoqda 🟢" },
-            { id: "AFR-02", name: "Afrosiyob Tezkor", type: "passenger", route: "Buxoro - Samarqand - Toshkent", speed: 195, emergency: false, driver: "A. Karimov", lat: 39.8500, lng: 64.6000, status: "Harakatlanmoqda 🟢" },
-            { id: "SHQ-101", name: "Sharq Poezdi", type: "passenger", route: "Toshkent - Qarshi", speed: 85, emergency: false, driver: "M. Rahimov", lat: 39.3500, lng: 66.8000, status: "Harakatlanmoqda 🟢" },
-            { id: "SHQ-102", name: "Sharq Express", type: "passenger", route: "Qarshi - Toshkent", speed: 0, emergency: false, driver: "S. Narzullayev", lat: 38.8605, lng: 65.7890, status: "Bekatda to'xtagan 🟡" },
-            { id: "NFT-909", name: "Sanoat Neft Tarkibi", type: "freight", route: "Buxoro - Farg'ona", speed: 62, emergency: false, driver: "E. Axmedov", lat: 41.0500, lng: 70.0500, status: "Harakatlanmoqda 🟢" },
-            { id: "YUK-301", name: "O'zbekiston Kon-Metall", type: "freight", route: "Olmaliq - Navoiy", speed: 55, emergency: false, driver: "B. Qodirov", lat: 40.8000, lng: 69.1000, status: "Harakatlanmoqda 🟢" },
-            { id: "YUK-302", name: "Qishloq Xo'jaligi Yuk", type: "freight", route: "Andijon - Toshkent", speed: 48, emergency: false, driver: "D. Umarov", lat: 40.8800, lng: 71.5000, status: "Harakatlanmoqda 🟢" },
-            { id: "PAS-501", name: "Toshkent - Marg'ilon", type: "passenger", route: "Toshkent - Farg'ona", speed: 72, emergency: false, driver: "X. G'ofurov", lat: 41.1500, lng: 69.8000, status: "Harakatlanmoqda 🟢" },
-            { id: "PAS-502", name: "Termiz Yo'lovchi", type: "passenger", route: "Toshkent - Termiz", speed: 68, emergency: false, driver: "N. Tojiyev", lat: 38.2000, lng: 67.2000, status: "Harakatlanmoqda 🟢" },
-            { id: "YUK-303", name: "Tranzit Konteyner", type: "freight", route: "Nukus - Buxoro", speed: 60, emergency: false, driver: "J. Rasulov", lat: 41.8000, lng: 61.2000, status: "Harakatlanmoqda 🟢" }
+            { id: "AFR-01", name: "Afrosiyob Express", type: "passenger", route: "Toshkent - Samarqand - Buxoro", path: railPaths.toshkent_buxoro, pathIndex: 0, speed: 210, emergency: false, driver: "O. Zokirov", lat: 41.2995, lng: 69.2401, status: "Harakatlanmoqda 🟢" },
+            { id: "AFR-02", name: "Afrosiyob Tezkor", type: "passenger", route: "Buxoro - Samarqand - Toshkent", path: railPaths.toshkent_buxoro, pathIndex: 4, speed: 195, emergency: false, driver: "A. Karimov", lat: 39.6542, lng: 66.9597, status: "Harakatlanmoqda 🟢" },
+            { id: "SHQ-101", name: "Sharq Poezdi", type: "passenger", route: "Toshkent - Qarshi", path: railPaths.toshkent_andijon, pathIndex: 1, speed: 85, emergency: false, driver: "M. Rahimov", lat: 41.0167, lng: 70.1433, status: "Harakatlanmoqda 🟢" },
+            { id: "SHQ-102", name: "Sharq Express", type: "passenger", route: "Qarshi - Toshkent", path: railPaths.toshkent_andijon, pathIndex: 5, speed: 0, emergency: false, driver: "S. Narzullayev", lat: 40.4686, lng: 71.7843, status: "Bekatda to'xtagan 🟡" },
+            { id: "NFT-909", name: "Sanoat Neft Tarkibi", type: "freight", route: "Buxoro - Farg'ona", path: railPaths.toshkent_buxoro, pathIndex: 5, speed: 62, emergency: false, driver: "E. Axmedov", lat: 40.0844, lng: 65.3792, status: "Harakatlanmoqda 🟢" },
+            { id: "YUK-301", name: "O'zbekiston Kon-Metall", type: "freight", route: "Olmaliq - Navoiy", path: railPaths.toshkent_andijon, pathIndex: 3, speed: 55, emergency: false, driver: "B. Qodirov", lat: 40.8736, lng: 71.1075, status: "Harakatlanmoqda 🟢" },
+            { id: "YUK-302", name: "Qishloq Xo'jaligi Yuk", type: "freight", route: "Andijon - Toshkent", path: railPaths.samarqand_termiz, pathIndex: 1, speed: 48, emergency: false, driver: "D. Umarov", lat: 38.8605, lng: 65.7890, status: "Harakatlanmoqda 🟢" },
+            { id: "PAS-501", name: "Toshkent - Marg'ilon", type: "passenger", route: "Toshkent - Farg'ona", path: railPaths.toshkent_andijon, pathIndex: 2, speed: 72, emergency: false, driver: "X. G'ofurov", lat: 41.1500, lng: 70.5000, status: "Harakatlanmoqda 🟢" },
+            { id: "PAS-502", name: "Termiz Yo'lovchi", type: "passenger", route: "Toshkent - Termiz", path: railPaths.samarqand_termiz, pathIndex: 3, speed: 68, emergency: false, driver: "N. Tojiyev", lat: 38.2667, lng: 67.8999, status: "Harakatlanmoqda 🟢" },
+            { id: "YUK-303", name: "Tranzit Konteyner", type: "freight", route: "Nukus - Buxoro", path: railPaths.buxoro_nukus, pathIndex: 1, speed: 60, emergency: false, driver: "J. Rasulov", lat: 41.2000, lng: 62.1000, status: "Harakatlanmoqda 🟢" }
         ];
 
         let currentFilter = 'all';
         let routeLine = null;
-
         const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
         alarmSound.loop = true;
+
+        // 2-QADAM: Poyezdlarni chiziq bo'ylab harakatlantiruvchi funksiya va Kirill tilidagi ovozli xabar
+        function moveTrainOnPath(train) {
+            if (train.emergency) return; // Avariya bo'lsa poyezd to'xtaydi
+
+            const currentPath = train.path;
+            if (!currentPath || currentPath.length === 0) return;
+
+            let targetIndex = train.pathIndex + 1;
+            if (targetIndex >= currentPath.length) {
+                targetIndex = 0;
+                train.pathIndex = 0;
+            }
+
+            const targetCoord = currentPath[targetIndex];
+            const step = 0.015; // Harakat tezligi qadami
+
+            if (Math.abs(train.lat - targetCoord[0]) > step) {
+                train.lat += train.lat < targetCoord[0] ? step : -step;
+            } else {
+                train.lat = targetCoord[0];
+            }
+
+            if (Math.abs(train.lng - targetCoord[1]) > step) {
+                train.lng += train.lng < targetCoord[1] ? step : -step;
+            } else {
+                train.lng = targetCoord[1];
+            }
+
+            if (train.lat === targetCoord[0] && train.lng === targetCoord[1]) {
+                train.pathIndex = targetIndex;
+            }
+        }
+
+        // Har 2 sekundda poyezdlarni chiziq bo'ylab siljitish
+        setInterval(() => {
+            trainDataGlobal.forEach(train => {
+                moveTrainOnPath(train);
+            });
+            renderTrains(trainDataGlobal);
+        }, 2000);
 
         function speakUzbekEmergency(trainName, route) {
             alarmSound.play().catch(e => console.log(e));
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const text = `Diqqat! Diqqat! ${route} yo'nalishidagi ${trainName} poyezdi favqulodda vaziyatga uchradi! Zudlik bilan chora ko'ring!`;
+                // Ovoz talaffuzi to'g'ri chiqishi uchun matn kirill alifbosida o'qiladi
+                const text = `Диққат! Диққат! ${route} йўналишидаги ${trainName} поезди фавқулодда вазиятга учради! Зудлик билан чора кўринг!`;
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'uz-UZ';
-                utterance.rate = 1.0;
+                utterance.rate = 0.95;
                 window.speechSynthesis.speak(utterance);
             }
         }
@@ -518,14 +576,12 @@
             const trainId = document.getElementById('train-select').value;
             let targetTrain = trainDataGlobal.find(t => t.id === trainId) || trainDataGlobal[0];
             if (!targetTrain) return alert("Tizimda poyezdlar ma'lumoti topilmadi!");
-
             targetTrain.emergency = true;
             targetTrain.status = "AVARIYA";
             targetTrain.speed = 0;
             renderTrains(trainDataGlobal);
             addLog(`🚨 BARCHA FVV QUTQARUV QISMLARIGA AVARIYA SIGNALI YUBORILDI!`, true);
             speakUzbekEmergency(targetTrain.name, targetTrain.route);
-
             let nearestUnit = null;
             let minDistance = Infinity;
             rescueUnits.forEach(unit => {
@@ -535,12 +591,10 @@
                     nearestUnit = unit;
                 }
             });
-
             if (routeLine) map.removeLayer(routeLine);
             routeLine = L.polyline([[nearestUnit.lat, nearestUnit.lng], [targetTrain.lat, targetTrain.lng]], {
                 color: '#FF0000', weight: 5, opacity: 0.9, dashArray: '10, 10'
             }).addTo(map);
-
             map.flyTo([targetTrain.lat, targetTrain.lng], 11, { animate: true, duration: 1.5 });
             addLog(`🚒 ENG YAQIN QUTQARUV QISMI: ${nearestUnit.name} (${minDistance.toFixed(1)} km). Safarbar etildi!`);
             showToast(`Avariya joyiga eng yaqin bo'lgan "${nearestUnit.name}" (${minDistance.toFixed(1)} km) jalb qilindi!`);
@@ -553,7 +607,6 @@
             let emergencyNum = 0;
             let totalSpeed = 0;
             let hasActiveEmergency = false;
-
             trains.forEach(train => {
                 totalSpeed += train.speed;
                 const isEmergency = train.emergency;
@@ -565,7 +618,6 @@
                 if (currentFilter === 'passenger' && train.type !== 'passenger') shouldShow = false;
                 if (currentFilter === 'freight' && train.type !== 'freight') shouldShow = false;
                 if (currentFilter === 'emergency' && !isEmergency) shouldShow = false;
-
                 let customIcon;
                 if (isEmergency) {
                     customIcon = L.divIcon({
@@ -583,7 +635,6 @@
                         iconAnchor: [10, 10]
                     });
                 }
-
                 if (markers[train.id]) {
                     if (shouldShow) {
                         markers[train.id].addTo(map);
@@ -595,7 +646,6 @@
                 } else if (shouldShow) {
                     markers[train.id] = L.marker([train.lat, train.lng], { icon: customIcon }).addTo(map);
                 }
-
                 if (markers[train.id]) {
                     const popupContent = `
                         <div style="font-family: Arial, sans-serif; min-width: 200px; padding: 5px;">
@@ -614,14 +664,11 @@
                     markers[train.id].bindPopup(popupContent);
                 }
             });
-
             if (!hasActiveEmergency) stopAlarm();
-
             const avgSpeed = trains.length > 0 ? Math.round(totalSpeed / trains.length) : 0;
             document.getElementById('avg-speed').innerText = avgSpeed + " km/h";
             document.getElementById('emergency-count').innerText = emergencyNum;
         }
-
         renderTrains(trainDataGlobal);
 
         function connectWebSocket() {
@@ -657,4 +704,3 @@
     </script>
 </body>
 </html>
-
