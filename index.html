@@ -612,10 +612,11 @@
 
         let currentFilter = 'all';
         let routeLine = null;
-        const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
+       // Haqiqiy favqulodda trevoga (sirena) ovozi
+        const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
         alarmSound.loop = true;
 
-        // 2-QADAM: Poyezdlarni chiziq bo'ylab harakatlantiruvchi funksiya va Kirill tilidagi ovozli xabar
+        // 2-QADAM: Poyezdlarni chiziq bo'ylab harakatlantiruvchi funksiya
         function moveTrainOnPath(train) {
             if (train.emergency) return; // Avariya bo'lsa poyezd to'xtaydi
 
@@ -656,23 +657,14 @@
             renderTrains(trainDataGlobal);
         }, 2000);
 
-        function speakUzbekEmergency(trainName, route) {
-            alarmSound.play().catch(e => console.log(e));
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                // Ovoz talaffuzi to'g'ri chiqishi uchun matn kirill alifbosida o'qiladi
-                const text = `Диққат! Диққат! ${route} йўналишидаги ${trainName} поезди фавқулодда вазиятга учради! Зудлик билан чора кўринг!`;
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'uz-UZ';
-                utterance.rate = 0.95;
-                window.speechSynthesis.speak(utterance);
-            }
+        // Faqat sirena signalini chalish (ovozli matn olib tashlandi)
+        function playEmergencyAlarm() {
+            alarmSound.play().catch(e => console.log("Ovozni chalishda xatolik:", e));
         }
 
         function stopAlarm() {
             alarmSound.pause();
             alarmSound.currentTime = 0;
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         }
 
         function toggleDistanceTable() {
