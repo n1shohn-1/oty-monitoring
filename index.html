@@ -104,6 +104,42 @@
     </style>
 </head>
 <body class="bg-navy-900 text-slate-100 font-sans h-screen flex flex-col lg:flex-row overflow-hidden">
+    <!-- AUTENTIFIKATSIYA VA LOGIN MODAL OYNA -->
+    <div id="login-modal" class="fixed inset-0 z-[5000] bg-navy-900/95 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-navy-800 border-2 border-fvv-yellow w-full max-w-md rounded-xl shadow-2xl p-6 text-center flex flex-col items-center relative">
+            <div class="w-20 h-20 mb-3 relative flex items-center justify-center bg-navy-900 rounded-full border-2 border-fvv-yellow p-1 shadow-lg">
+                <img id="login-avatar" src="https://pub-5deb0ec8de0b43cf878f565588c0d10f.r2.dev/images/FVV.png" alt="User Avatar" class="w-full h-full object-cover rounded-full">
+            </div>
+            <h2 class="text-lg font-bold text-white uppercase tracking-wider mb-1">TIZIMGA KIRISH</h2>
+            <p class="text-xs text-slate-400 mb-5">O'TY & FVV Yagona Monitoring Markazi</p>
+            
+            <div class="w-full text-left space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-300 font-semibold mb-1">Ism va Familiya:</label>
+                    <input type="text" id="input-fullname" oninput="validateUserIdentity()" placeholder="Masalan: Nusratullayev Shaxriyor" class="w-full bg-navy-900 border border-navy-600 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-fvv-yellow">
+                </div>
+                
+                <div id="user-info-card" class="hidden bg-navy-900/80 border border-fvv-yellow/40 rounded-md p-2.5 text-xs text-slate-300 flex items-center gap-3">
+                    <span class="text-xl">🛡️</span>
+                    <div>
+                        <p class="font-bold text-fvv-yellow" id="card-name">-</p>
+                        <p class="text-[10px] text-slate-400">Lavozim: Navbatchi Operativ Shartli Komandir</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-300 font-semibold mb-1">Parol:</label>
+                    <input type="password" id="input-password" placeholder="Parolni kiriting..." class="w-full bg-navy-900 border border-navy-600 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-fvv-yellow">
+                </div>
+            </div>
+
+            <p id="login-error" class="text-xs text-fvv-red mt-3 hidden font-semibold"></p>
+
+            <button onclick="submitLogin()" class="w-full bg-fvv-yellow hover:bg-yellow-500 text-navy-900 font-bold py-2.5 rounded-md mt-5 transition-all uppercase text-xs">
+                Tizimga Kirish
+            </button>
+        </div>
+    </div>
     <!-- CHAP TOMON: Boshqaruv Paneli -->
     <aside class="w-full lg:w-[420px] bg-navy-800 border-r border-navy-600 shadow-xl flex flex-col h-full z-20">
        <div class="bg-navy-900 border-b-2 border-fvv-yellow p-4 flex items-center gap-4 shrink-0">
@@ -117,7 +153,18 @@
                </p>
            </div>
        </div>
-        <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
+       <!-- FOYDALANUVCHI PROFILI BAR -->
+       <div id="active-user-bar" class="bg-navy-700/60 border-b border-navy-600 px-4 py-2 flex items-center justify-between shrink-0">
+           <div class="flex items-center gap-3">
+               <img id="header-avatar" src="https://pub-5deb0ec8de0b43cf878f565588c0d10f.r2.dev/images/FVV.png" class="w-8 h-8 rounded-full border border-fvv-yellow object-cover">
+               <div>
+                   <p id="header-user-name" class="text-xs font-bold text-white">Shaxriyor Nusratullayev</p>
+                   <p class="text-[10px] text-fvv-yellow">Tizim Operatori (Onlayn)</p>
+               </div>
+           </div>
+           <button onclick="logoutUser()" class="text-[10px] text-red-400 hover:text-red-300 underline font-semibold">Chiqish</button>
+       </div> 
+       <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
             <div>
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Ko'rsatkichlari</h2>
                 <div class="grid grid-cols-2 gap-3">
@@ -942,6 +989,87 @@
             document.body.removeChild(link);
             addLog("Hisobot yuklab olindi.");
         }
-    </script>
+   // AUTENTIFIKATSIYA VA SHAXSNI TASDIQLASH LOGIKASI (Mayor M. Boyxo'rozov)
+        const validUsers = {
+            "m.boyxo'rozov": {
+                name: "Mayor M. Boyxo'rozov",
+                rank: "Lavozim: O'TY va FVV Bosh Nazoratchi-Kordinatori",
+                photo: "https://api.dicebear.com/7.x/bottts/svg?seed=Boyxorozov", // Mayor uchun maxsus harbiy/rasmiy avatar
+                pass: "1987" // Belgilangan parol
+            },
+            "boyxo'rozov": {
+                name: "Mayor M. Boyxo'rozov",
+                rank: "Lavozim: O'TY va FVV Bosh Nazoratchi-Kordinatori",
+                photo: "https://api.dicebear.com/7.x/bottts/svg?seed=Boyxorozov",
+                pass: "1987"
+            },
+            "mayor boyxo'rozov": {
+                name: "Mayor M. Boyxo'rozov",
+                rank: "Lavozim: O'TY va FVV Bosh Nazoratchi-Kordinatori",
+                photo: "https://api.dicebear.com/7.x/bottts/svg?seed=Boyxorozov",
+                pass: "1987"
+            }
+        };
+
+        function validateUserIdentity() {
+            const rawInput = document.getElementById('input-fullname').value.trim().toLowerCase();
+            const avatarImg = document.getElementById('login-avatar');
+            const infoCard = document.getElementById('user-info-card');
+            const cardName = document.getElementById('card-name');
+            const cardRank = infoCard.querySelector('p:nth-child(2)');
+            const errorBox = document.getElementById('login-error');
+
+            errorBox.classList.add('hidden');
+
+            if (validUsers[rawInput]) {
+                const user = validUsers[rawInput];
+                avatarImg.src = user.photo;
+                cardName.innerText = user.name;
+                if(cardRank) cardRank.innerText = user.rank;
+                infoCard.classList.remove('hidden');
+            } else {
+                avatarImg.src = "https://pub-5deb0ec8de0b43cf878f565588c0d10f.r2.dev/images/FVV.png";
+                infoCard.classList.add('hidden');
+            }
+        }
+
+        function submitLogin() {
+            const rawInput = document.getElementById('input-fullname').value.trim().toLowerCase();
+            const passInput = document.getElementById('input-password').value.trim();
+            const errorBox = document.getElementById('login-error');
+
+            if (!validUsers[rawInput]) {
+                errorBox.innerText = "Foydalanuvchi topilmadi! (Masalan: M.Boyxo'rozov)";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            const user = validUsers[rawInput];
+            if (passInput !== user.pass) {
+                errorBox.innerText = "Kiritilgan parol noto'g'ri!";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            // Mayor M. Boyxo'rozov profili bilan dasturga kirish
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('header-avatar').src = user.photo;
+            document.getElementById('header-user-name').innerText = user.name;
+            
+            // Subtitle statusini o'zgartirish
+            const subTitle = document.querySelector('#active-user-bar p:nth-child(2)');
+            if(subTitle) subTitle.innerText = "Bosh Nazoratchi (Onlayn)";
+
+            addLog(`Tizimga kirish tasdiqlandi: ${user.name}`);
+        }
+
+        function logoutUser() {
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('input-password').value = '';
+            document.getElementById('input-fullname').value = '';
+            document.getElementById('user-info-card').classList.add('hidden');
+            addLog("Foydalanuvchi tizimdan chiqdi.");
+        }
+   </script>
 </body>
 </html>
