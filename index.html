@@ -561,6 +561,7 @@
             L.marker([unit.lat, unit.lng], { icon: rescueIcon }).bindPopup(`<b>🚒 ${unit.name}</b><br>FVV Yong'in-Qutqaruv Qismi`).addTo(map);
         });
 // HIMOYA INSHOOTLARI (BOSHPANALAR / УБЕЖИЩЕ)
+        // HIMOYA INSHOOTLARI (BOSHPANALAR / УБЕЖИЩЕ) - Sariq rangda
         const shelters = [
             { name: "Toshkent sh. Boshpana", lat: 41.3110, lng: 69.2797 },
             { name: "Sirdaryo v. Boshpana", lat: 40.5012, lng: 68.7881 },
@@ -580,9 +581,9 @@
         shelters.forEach(shelter => {
             const shelterIcon = L.divIcon({
                 className: '',
-                html: `<div style="background-color: #3b82f6; width: 10px; height: 10px; border-radius: 2px; border: 1.5px solid #ffffff; box-shadow: 0 0 5px #3b82f6;"></div>`,
-                iconSize: [10, 10],
-                iconAnchor: [5, 5]
+                html: `<div style="background-color: #eab308; width: 14px; height: 14px; border-radius: 2px; border: 1.5px solid #ffffff; box-shadow: 0 0 6px #eab308; display: flex; align-items: center; justify-content: center; font-size: 9px;">🏠</div>`,
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
             });
             L.marker([shelter.lat, shelter.lng], { icon: shelterIcon })
              .bindPopup(`<b>🏠 ${shelter.name}</b><br>Himoya inshooti (Boshpana / Убежище)`)
