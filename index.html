@@ -319,7 +319,8 @@
                 <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 bg-white border border-black rounded-full inline-block"></span> Stansiya</div>
                 <div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 bg-red-500 rounded-full inline-block border border-white"></span> Avariya / Yong'in holati (🔥)</div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 bg-red-600 rounded-full inline-block border border-white"></span> FVV Qutqaruv Qismi (CHAS)</div>
-            `;
+                <div class="flex items-center gap-2"><span class="w-3 h-3 bg-blue-500 rounded-sm inline-block border border-white"></span> Himoya inshooti (Boshpana / Убежище)</div>
+                `;
             return div;
         };
         legendControl.addTo(map);
@@ -559,7 +560,34 @@
             });
             L.marker([unit.lat, unit.lng], { icon: rescueIcon }).bindPopup(`<b>🚒 ${unit.name}</b><br>FVV Yong'in-Qutqaruv Qismi`).addTo(map);
         });
+// HIMOYA INSHOOTLARI (BOSHPANALAR / УБЕЖИЩЕ)
+        const shelters = [
+            { name: "Toshkent sh. Boshpana", lat: 41.3110, lng: 69.2797 },
+            { name: "Sirdaryo v. Boshpana", lat: 40.5012, lng: 68.7881 },
+            { name: "Jizzax v. Boshpana", lat: 40.1158, lng: 67.8422 },
+            { name: "Samarqand v. Boshpana", lat: 39.6542, lng: 66.9597 },
+            { name: "Navoiy v. Boshpana", lat: 40.0844, lng: 65.3792 },
+            { name: "Buxoro v. Boshpana", lat: 39.7747, lng: 64.4286 },
+            { name: "Qarshi sh. Boshpana", lat: 38.8605, lng: 65.7890 },
+            { name: "Termiz sh. Boshpana", lat: 37.2242, lng: 67.2783 },
+            { name: "Urganch sh. Boshpana", lat: 41.5600, lng: 60.6300 },
+            { name: "Nukus sh. Boshpana", lat: 42.4647, lng: 59.6008 },
+            { name: "Andijon v. Boshpana", lat: 40.7829, lng: 72.3442 },
+            { name: "Namangan v. Boshpana", lat: 40.9983, lng: 71.6726 },
+            { name: "Farg'ona v. Boshpana", lat: 40.3842, lng: 71.7843 }
+        ];
 
+        shelters.forEach(shelter => {
+            const shelterIcon = L.divIcon({
+                className: '',
+                html: `<div style="background-color: #3b82f6; width: 10px; height: 10px; border-radius: 2px; border: 1.5px solid #ffffff; box-shadow: 0 0 5px #3b82f6;"></div>`,
+                iconSize: [10, 10],
+                iconAnchor: [5, 5]
+            });
+            L.marker([shelter.lat, shelter.lng], { icon: shelterIcon })
+             .bindPopup(`<b>🏠 ${shelter.name}</b><br>Himoya inshooti (Boshpana / Убежище)`)
+             .addTo(map);
+        });
         // 1-QADAM: Poyezdlarning yo'nalish koordinatalarini belgilash (Aniq temir yo'l yo'laklari)
         const railPaths = {
             toshkent_buxoro: [
