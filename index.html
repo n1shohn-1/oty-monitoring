@@ -158,11 +158,14 @@
                     AVARIYA HAQIDA BARCHA QISMLARGA XABAR YUBORISH VA ENG YAQININI JALB ETISH
                 </button>
                 <button onclick="toggleDistanceTable()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-md text-xs uppercase mb-2">
-                    📊 Masofalar Jadvali (KM)
-                </button>
-                <button onclick="exportToCSV()" class="w-full bg-navy-600 hover:bg-navy-700 text-white font-medium py-3 rounded-md text-sm shadow-md border border-navy-600">
-                    Hisobotni Yuklab Olish (CSV)
-                </button>
+    📊 Masofalar Jadvali (KM)
+</button>
+<button onclick="toggleShelters()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2.5 rounded-md text-xs uppercase mb-2">
+    🏠 Boshpanalarni Ko'rsatish / Yashirish
+</button>
+<button onclick="exportToCSV()" class="w-full bg-navy-600 hover:bg-navy-700 text-white font-medium py-3 rounded-md text-sm shadow-md border border-navy-600">
+    Hisobotni Yuklab Olish (CSV)
+</button>
             </div>
             <div class="border-t border-navy-600 pt-5 flex-1 flex flex-col min-h-[180px]">
                 <h2 class="text-xs font-bold text-slate-400 uppercase mb-3">Tizim Jurnali</h2>
@@ -319,7 +322,7 @@
                 <div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 bg-white border border-black rounded-full inline-block"></span> Stansiya</div>
                 <div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 bg-red-500 rounded-full inline-block border border-white"></span> Avariya / Yong'in holati (🔥)</div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 bg-red-600 rounded-full inline-block border border-white"></span> FVV Qutqaruv Qismi (CHAS)</div>
-                <div class="flex items-center gap-2"><span class="w-3 h-3 bg-blue-500 rounded-sm inline-block border border-white"></span> Himoya inshooti (Boshpana / Убежище)</div>
+                <div id="legend-shelter-item" class="flex items-center gap-2 mt-1 hidden"><span class="w-3 h-3 bg-yellow-500 rounded-sm inline-block border border-white text-center text-[8px]">🏠</span> Himoya inshooti (Boshpana)</div>
                 `;
             return div;
         };
@@ -562,6 +565,10 @@
         });
 // HIMOYA INSHOOTLARI (BOSHPANALAR / УБЕЖИЩЕ)
         // HIMOYA INSHOOTLARI (BOSHPANALAR / УБЕЖИЩЕ) - Sariq rangda
+        // BOSHSPANALAR (УБЕЖИЩЕ) UCHUN QATLAM VA MASSIV
+        const sheltersLayer = L.layerGroup();
+        let sheltersVisible = false;
+
         const shelters = [
             { name: "Toshkent sh. Boshpana", lat: 41.3110, lng: 69.2797 },
             { name: "Sirdaryo v. Boshpana", lat: 40.5012, lng: 68.7881 },
@@ -585,10 +592,25 @@
                 iconSize: [14, 14],
                 iconAnchor: [7, 7]
             });
-            L.marker([shelter.lat, shelter.lng], { icon: shelterIcon })
-             .bindPopup(`<b>🏠 ${shelter.name}</b><br>Himoya inshooti (Boshpana / Убежище)`)
-             .addTo(map);
+            const marker = L.marker([shelter.lat, shelter.lng], { icon: shelterIcon })
+             .bindPopup(`<b>🏠 ${shelter.name}</b><br>Himoya inshooti (Boshpana / Убежище)`);
+            
+            sheltersLayer.addLayer(marker);
         });
+
+        // Boshpanalarni ko'rsatish/yashirish funksiyasi
+        function toggleShelters() {
+            if (sheltersVisible) {
+                map.removeLayer(sheltersLayer);
+                sheltersVisible = false;
+                addLog("Himoya inshootlari (boshpanalar) xaritadan yashirildi.");
+            } else {
+                map.addLayer(sheltersLayer);
+                sheltersVisible = true;
+                addLog("Himoya inshootlari (boshpanalar) xaritaga chiqarildi.");
+            }
+            document.getElementById('legend-shelter-item').classList.toggle('hidden', !sheltersVisible);
+        }
         // 1-QADAM: Poyezdlarning yo'nalish koordinatalarini belgilash (Aniq temir yo'l yo'laklari)
         const railPaths = {
             toshkent_buxoro: [
